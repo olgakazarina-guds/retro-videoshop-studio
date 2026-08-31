@@ -1,10 +1,11 @@
 #pragma once
-#include <ofxOpenCv/openCV.hpp>
+#include "ofxOpenCv.h"
+
 class BaseFilter
 {
 
 public:
-	virtual ~BaseFilter = default;
+	virtual ~BaseFilter () = default;
 	virtual cv::Mat process(const cv::Mat& input, float intensity) = 0;
 };
 
