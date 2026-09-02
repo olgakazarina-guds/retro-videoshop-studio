@@ -6,14 +6,19 @@ class MediaSourceManager
 {
 	public:
 		void loadImage(const std::string& path);
-		void loadVideo(const std::string& path);
+		/*void loadVideo(const std::string& path);
 		void openWebcam(int deviceID = 0);
-		void update();
+		void update();*/
 		cv::Mat getCurrentFrame();
 
 	private:
 		cv::Mat currentFrame;
-		//specific variables for video player or grabber
 
+		// Source objects
+    //ofVideoPlayer videoPlayer;
+    
+	// Status to check which source is active
+    enum SourceType { NONE, IMAGE};
+    SourceType activeSource = NONE;
 };
 

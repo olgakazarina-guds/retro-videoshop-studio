@@ -3,22 +3,26 @@
 void ofApp::setup() {
     ofSetWindowTitle("Retro Videoshop Studio");
     ofSetWindowShape(1280, 720);
+	mediaManager.loadImage("Test.jpg"); // Load a default image for testing
     currentState = AppState::HOME;
     frameBuffer = cv::Mat::zeros(720, 1280, CV_8UC3);
 
+	// Disable default behavior of ESC key quitting the app, allowing us to use it for navigation
+	ofSetEscapeQuitsApp(false);
+
     // Initialize media feed (defaults to webcam or demo reel)
-    mediaManager.openWebcam();
+    //mediaManager.openWebcam();
 }
 
 void ofApp::update() {
-    // 1. Advance media frame
-    mediaManager.update();
-    cv::Mat currentFrame = mediaManager.getCurrentFrame();
+	  // 1. Advance media frame
+	  // mediaManager.update();
+	  cv::Mat currentFrame = mediaManager.getCurrentFrame();
 
-    // 2. Delegate rendering to the active view based on state
-    switch (currentState) {
-        case AppState::HOME:
-            homeView.draw(frameBuffer, currentFrame);
+     // 2. Delegate rendering to the active view based on state
+		switch (currentState) {
+			case AppState::HOME:
+		           homeView.draw(frameBuffer, currentFrame);
             break;
         case AppState::QUAD_VIEW:
             quadView.draw(frameBuffer, currentFrame);
@@ -35,8 +39,10 @@ void ofApp::update() {
 void ofApp::draw() {
     // Convert OpenCV BGR Mat to openFrameworks texture and display
     if (!frameBuffer.empty()) {
+		cv::Mat displayMat;
+		cv::cvtColor(frameBuffer, displayMat, cv::COLOR_BGR2RGB); // Convert BGR to RGB for correct color display
         ofImage img;
-        img.setFromPixels(frameBuffer.data, frameBuffer.cols, frameBuffer.rows, OF_IMAGE_COLOR);
+        img.setFromPixels(displayMat.data, displayMat.cols, displayMat.rows, OF_IMAGE_COLOR);
         img.draw(0, 0, ofGetWidth(), ofGetHeight());
     }
 }
@@ -49,6 +55,11 @@ void ofApp::mousePressed(int x, int y, int button) {
         } else if (action == HomeAction::SELECT_MODE) {
             modeView.setFilter(&retroFilter, "1950s Retro Mode");
             currentState = AppState::MODE_VIEW;
+		}
+		else if (action == HomeAction::UPLOAD_STREAM) {
+			// For simplicity, we will just load a default image for now
+			mediaManager.loadImage("Test.jpg");
+			currentState = AppState::FILTER_STUDIO;
         } else if (action == HomeAction::MANUAL_FILTER) {
             currentState = AppState::FILTER_STUDIO;
         }
