@@ -1,71 +1,82 @@
 #include "ofApp.h"
 
-//--------------------------------------------------------------
-void ofApp::setup(){
+void ofApp::setup() {
+    ofSetWindowTitle("Retro Videoshop Studio");
+    ofSetWindowShape(1280, 720);
+    currentState = AppState::HOME;
+    frameBuffer = cv::Mat::zeros(720, 1280, CV_8UC3);
 
+    // Initialize media feed (defaults to webcam or demo reel)
+    mediaManager.openWebcam();
 }
 
-//--------------------------------------------------------------
-void ofApp::update(){
+void ofApp::update() {
+    // 1. Advance media frame
+    mediaManager.update();
+    cv::Mat currentFrame = mediaManager.getCurrentFrame();
 
+    // 2. Delegate rendering to the active view based on state
+    switch (currentState) {
+        case AppState::HOME:
+            homeView.draw(frameBuffer, currentFrame);
+            break;
+        case AppState::QUAD_VIEW:
+            quadView.draw(frameBuffer, currentFrame);
+            break;
+        case AppState::MODE_VIEW:
+            modeView.draw(frameBuffer, currentFrame);
+            break;
+        case AppState::FILTER_STUDIO:
+            studioView.draw(frameBuffer, currentFrame);
+            break;
+    }
 }
 
-//--------------------------------------------------------------
-void ofApp::draw(){
-
+void ofApp::draw() {
+    // Convert OpenCV BGR Mat to openFrameworks texture and display
+    if (!frameBuffer.empty()) {
+        ofImage img;
+        img.setFromPixels(frameBuffer.data, frameBuffer.cols, frameBuffer.rows, OF_IMAGE_COLOR);
+        img.draw(0, 0, ofGetWidth(), ofGetHeight());
+    }
 }
 
-//--------------------------------------------------------------
-void ofApp::keyPressed(int key){
-
+void ofApp::mousePressed(int x, int y, int button) {
+    if (currentState == AppState::HOME) {
+        HomeAction action = homeView.handleMouseClicked(x, y);
+        if (action == HomeAction::PLAY_VIEW) {
+            currentState = AppState::QUAD_VIEW;
+        } else if (action == HomeAction::SELECT_MODE) {
+            modeView.setFilter(&retroFilter, "1950s Retro Mode");
+            currentState = AppState::MODE_VIEW;
+        } else if (action == HomeAction::MANUAL_FILTER) {
+            currentState = AppState::FILTER_STUDIO;
+        }
+    } 
+    else if (currentState == AppState::QUAD_VIEW) {
+        // Click-to-mode routing from 2x2 matrix
+        int quadIndex = quadView.handleMouseClicked(x, y);
+        if (quadIndex == 1) { 
+            modeView.setFilter(&retroFilter, "1950s Retro Mode"); 
+            currentState = AppState::MODE_VIEW; 
+        } else if (quadIndex == 2) { 
+            modeView.setFilter(&holidayFilter, "Holiday Warmth Mode"); 
+            currentState = AppState::MODE_VIEW; 
+        } else if (quadIndex == 3) { 
+            modeView.setFilter(&partyFilter, "Party Neon Mode"); 
+            currentState = AppState::MODE_VIEW; 
+        }
+    }
 }
 
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-
+void ofApp::keyPressed(int key) {
+    // ESC key always returns to the main Home dashboard
+    if (key == OF_KEY_ESC) {
+        currentState = AppState::HOME;
+    }
+    // Intensity adjustments in ModeView
+    else if (currentState == AppState::MODE_VIEW) {
+        if (key == '+' || key == '=') modeView.setIntensity(modeView.getIntensity() + 0.05f);
+        if (key == '-' || key == '_') modeView.setIntensity(modeView.getIntensity() - 0.05f);
+    }
 }
