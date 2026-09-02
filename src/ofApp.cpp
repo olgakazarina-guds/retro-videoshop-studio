@@ -6,7 +6,7 @@ void ofApp::setup() {
     currentState = AppState::HOME;
     frameBuffer = cv::Mat::zeros(720, 1280, CV_8UC3);
 
-    // Initialize media feed (defaults to webcam or demo reel)
+    // Initialize media feed
     mediaManager.openWebcam();
 }
 
@@ -33,10 +33,13 @@ void ofApp::update() {
 }
 
 void ofApp::draw() {
-    // Convert OpenCV BGR Mat to openFrameworks texture and display
     if (!frameBuffer.empty()) {
+        // Fix RGB color coding: Convert OpenCV BGR to openFrameworks RGB
+        cv::Mat rgbBuffer;
+        cv::cvtColor(frameBuffer, rgbBuffer, cv::COLOR_BGR2RGB);
+
         ofImage img;
-        img.setFromPixels(frameBuffer.data, frameBuffer.cols, frameBuffer.rows, OF_IMAGE_COLOR);
+        img.setFromPixels(rgbBuffer.data, rgbBuffer.cols, rgbBuffer.rows, OF_IMAGE_COLOR);
         img.draw(0, 0, ofGetWidth(), ofGetHeight());
     }
 }
