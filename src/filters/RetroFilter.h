@@ -4,10 +4,10 @@ class RetroFilter :
     public BaseFilter {
 
 public:
+	RetroFilter() = default;
+	virtual ~RetroFilter() = default;
 
-cv::Mat process(const cv::Mat& input, float intensity) override {
-        // Temporary pass-through so it compiles
-        return input.clone();
-}
+cv::Mat process(const cv::Mat& input, float intensity) override;
+
 };
 
