@@ -9,7 +9,7 @@ void ofApp::setup() {
 frameBuffer = cv::Mat::zeros(720, 1280, CV_8UC3);
 
     // Disable default behavior of ESC key quitting the app, allowing us to use it for navigation
-    ofSetEscapeQuitApp(false);
+    ofSetEscapeQuitsApp(false);
 
     // Initialize media feed (defaults to webcam or demo reel)
     //mediaManager.openWebcam();
