@@ -1,12 +1,12 @@
 #pragma once
+
 #include "BaseFilter.h"
-class HolidayFilter :
-    public BaseFilter {
+#include <opencv2/opencv.hpp>
 
+class HolidayFilter : public BaseFilter {
 public:
-	HolidayFilter() = default;
-	virtual ~HolidayFilter() = default;
+    HolidayFilter() = default;
+    virtual ~HolidayFilter() = default;
 
-	cv::Mat process(const cv::Mat& input, float intensity) override;
-	};
-
+    cv::Mat process(const cv::Mat& input, float intensity) override;
+};

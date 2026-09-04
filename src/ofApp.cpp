@@ -6,9 +6,10 @@ void ofApp::setup() {
 	mediaManager.loadImage("Test.jpg"); // Load a default image for testing
     currentState = AppState::HOME;
     frameBuffer = cv::Mat::zeros(720, 1280, CV_8UC3);
+frameBuffer = cv::Mat::zeros(720, 1280, CV_8UC3);
 
-	// Disable default behavior of ESC key quitting the app, allowing us to use it for navigation
-	ofSetEscapeQuitsApp(false);
+    // Disable default behavior of ESC key quitting the app, allowing us to use it for navigation
+    ofSetEscapeQuitApp(false);
 
     // Initialize media feed (defaults to webcam or demo reel)
     //mediaManager.openWebcam();
@@ -37,7 +38,6 @@ void ofApp::update() {
 }
 
 void ofApp::draw() {
-    // Convert OpenCV BGR Mat to openFrameworks texture and display
     if (!frameBuffer.empty()) {
 		cv::Mat displayMat;
 		cv::cvtColor(frameBuffer, displayMat, cv::COLOR_BGR2RGB); // Convert BGR to RGB for correct color display
