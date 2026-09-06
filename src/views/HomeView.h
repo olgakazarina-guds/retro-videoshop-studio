@@ -3,7 +3,7 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 
-// Enum for the dashboard actions (Matches your ofApp)
+// Action enum for ofApp state switching
 enum class HomeAction {
     NONE = 0,
     PLAY_VIEW,
@@ -16,16 +16,16 @@ class HomeView {
 public:
     HomeView();
 
-    // Main draw function matching your ofApp signature
+    // Renders the viewfinder and dashboard onto the canvas
     void draw(cv::Mat& canvas, const cv::Mat& previewFrame);
 
-    // Mouse click hit test
+    // Mouse click hit test for dashboard cards
     HomeAction handleMouseClicked(int x, int y);
 
 private:
     int frameCounter;
 
-    // Bounding rectangles for the 4 clickable cards
+    // Clickable card bounding boxes on 1280x720 canvas
     cv::Rect btnPlayView;
     cv::Rect btnSelectMode;
     cv::Rect btnUploadStream;
