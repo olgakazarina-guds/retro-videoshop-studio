@@ -6,7 +6,8 @@
 void ofApp::setup() {
     // 1. Set window title and standard 16:9 widescreen dimensions
     ofSetWindowTitle("Retro Videoshop Studio");
-    ofSetWindowShape(1280, 720);
+    ofSetFrameRate(60);
+    ofSetVerticalSync(true);
 
     // 2. Prevent the ESC key from closing the app, so we can use it to return home
     ofSetEscapeQuitsApp(false);
