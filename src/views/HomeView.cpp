@@ -2,74 +2,49 @@
 #include <ctime>
 
 HomeView::HomeView() : frameCounter(0) {
-    // 4 clickable deck buttons across the bottom
-    btnPlayView     = cv::Rect(40,  475, 265, 185);
-    btnSelectMode   = cv::Rect(345, 475, 265, 185);
-    btnUploadStream = cv::Rect(650, 475, 265, 185);
-    btnManualFilter = cv::Rect(955, 475, 265, 185);
+    // 4 clickable deck cards across the bottom
+    btnPlayView     = cv::Rect(40,  460, 265, 200);
+    btnSelectMode   = cv::Rect(345, 460, 265, 200);
+    btnUploadStream = cv::Rect(650, 460, 265, 200);
+    btnManualFilter = cv::Rect(955, 460, 265, 200);
 }
 
 void HomeView::draw(cv::Mat& canvas, const cv::Mat& previewFrame) {
     frameCounter++;
 
-    // 1. Dark textured camera body background (deep slate charcoal)
-    canvas = cv::Scalar(14, 14, 16);
+    // 1. Dark matte chassis background
+    canvas = cv::Scalar(18, 18, 20);
+
+    // 2. Viewfinder monitor dimensions
+    cv::Rect screenRect(240, 70, 800, 360);
+
+    // Outer camera bezel chassis (generous margins)
+    cv::Rect outerChassis(225, 22, 830, 420);
+    cv::rectangle(canvas, outerChassis, cv::Scalar(28, 28, 34), -1);
+    cv::rectangle(canvas, outerChassis, cv::Scalar(65, 65, 75), 2);
 
     // -------------------------------------------------------------------------
-    // HARDWARE CHASSIS: Full Camera Bezel Plate
+    // 3. Calm [REC] Indicator (Gentle 1-second pulse, no redundant "TALLY" text)
     // -------------------------------------------------------------------------
-    cv::Rect screenRect(240, 75, 800, 350);
-    cv::Rect outerChassis(215, 20, 850, 425);
+    // 45 frames ~ 0.8-1.0 second calm pulse (instead of frantic flashing)
+    bool recBlink = (frameCounter / 45) % 2 == 0;
+    cv::Point tallyCenter(260, 46);
 
-    // Solid chassis faceplate with double metallic chamfer border
-    cv::rectangle(canvas, outerChassis, cv::Scalar(24, 24, 28), -1);
-    cv::rectangle(canvas, outerChassis, cv::Scalar(60, 60, 68), 2);
-    cv::rectangle(canvas, cv::Rect(outerChassis.x - 4, outerChassis.y - 4, outerChassis.width + 8, outerChassis.height + 8), 
-                 cv::Scalar(40, 40, 46), 1);
+    // Outer lamp ring
+    cv::circle(canvas, tallyCenter, 8, cv::Scalar(70, 70, 80), 2);
 
-    // Chassis Corner Screws (Authentic mechanical detail)
-    auto drawScrew = [&](int sx, int sy) {
-        cv::circle(canvas, cv::Point(sx, sy), 5, cv::Scalar(45, 45, 50), -1);
-        cv::circle(canvas, cv::Point(sx, sy), 5, cv::Scalar(90, 90, 100), 1);
-        cv::line(canvas, cv::Point(sx - 3, sy), cv::Point(sx + 3, sy), cv::Scalar(20, 20, 24), 1);
-        cv::line(canvas, cv::Point(sx, sy - 3), cv::Point(sx, sy + 3), cv::Scalar(20, 20, 24), 1);
-    };
-    drawScrew(outerChassis.x + 12, outerChassis.y + 12);
-    drawScrew(outerChassis.x + outerChassis.width - 12, outerChassis.y + 12);
-    drawScrew(outerChassis.x + 12, outerChassis.y + outerChassis.height - 12);
-    drawScrew(outerChassis.x + outerChassis.width - 12, outerChassis.y + outerChassis.height - 12);
-
-    // -------------------------------------------------------------------------
-    // TOP BEZEL: Blinking Tally Lamp & Vintage Camera Branding
-    // -------------------------------------------------------------------------
-    bool recBlink = (frameCounter / 15) % 2 == 0;
-    cv::Point tallyCenter(255, 48);
-
-    // Rec LED ring and lamp
-    cv::circle(canvas, tallyCenter, 9, cv::Scalar(75, 75, 85), 2);
     if (recBlink) {
-        cv::circle(canvas, tallyCenter, 7, cv::Scalar(0, 0, 245), -1);
-        cv::putText(canvas, "REC TALLY", cv::Point(272, 53), 
-                   cv::FONT_HERSHEY_SIMPLEX, 0.48, cv::Scalar(0, 0, 245), 2);
+        cv::circle(canvas, tallyCenter, 6, cv::Scalar(0, 0, 240), -1); // Bright red dot
+        cv::putText(canvas, "REC", cv::Point(276, 52), 
+                   cv::FONT_HERSHEY_SIMPLEX, 0.55, cv::Scalar(0, 0, 240), 2);
     } else {
-        cv::circle(canvas, tallyCenter, 7, cv::Scalar(0, 0, 75), -1);
-        cv::putText(canvas, "REC TALLY", cv::Point(272, 53), 
-                   cv::FONT_HERSHEY_SIMPLEX, 0.48, cv::Scalar(110, 110, 120), 1);
+        cv::circle(canvas, tallyCenter, 6, cv::Scalar(0, 0, 75), -1);  // Dim standby red
+        cv::putText(canvas, "REC", cv::Point(276, 52), 
+                   cv::FONT_HERSHEY_SIMPLEX, 0.55, cv::Scalar(110, 110, 120), 1);
     }
 
-    // Camera Brand Badge in center
-    cv::Rect badgeRect(520, 36, 240, 22);
-    cv::rectangle(canvas, badgeRect, cv::Scalar(32, 32, 38), -1);
-    cv::rectangle(canvas, badgeRect, cv::Scalar(80, 80, 90), 1);
-    cv::putText(canvas, "RETRO-CAM // V-800", cv::Point(535, 52), 
-               cv::FONT_HERSHEY_SIMPLEX, 0.45, cv::Scalar(210, 210, 220), 1);
-
-    // Right-hand format telemetry
-    cv::putText(canvas, "NTSC 525-L | 30 FPS", cv::Point(870, 53),
-               cv::FONT_HERSHEY_PLAIN, 1.1, cv::Scalar(150, 150, 160), 1);
-
     // -------------------------------------------------------------------------
-    // LIVE VIEWFINDER SCREEN
+    // 4. Render Live Video Feed
     // -------------------------------------------------------------------------
     if (!previewFrame.empty()) {
         cv::Mat resizedPreview;
@@ -78,84 +53,53 @@ void HomeView::draw(cv::Mat& canvas, const cv::Mat& previewFrame) {
     } else {
         cv::rectangle(canvas, screenRect, cv::Scalar(5, 5, 5), -1);
     }
-    // Inner bevel border around the video screen
-    cv::rectangle(canvas, screenRect, cv::Scalar(60, 60, 65), 3);
+    // Subtle border around the video screen
+    cv::rectangle(canvas, screenRect, cv::Scalar(80, 80, 85), 2);
 
     // -------------------------------------------------------------------------
-    // OPTICAL OVERLAY: Corner Brackets & Center Crosshair
+    // 5. Optical Center Crosshair
     // -------------------------------------------------------------------------
-    int pad = 15;
-    int bLen = 16;
-    cv::Scalar bracketCol(0, 190, 255); // Amber optical brackets
-
-    // Top-Left [
-    cv::line(canvas, cv::Point(screenRect.x + pad, screenRect.y + pad), cv::Point(screenRect.x + pad + bLen, screenRect.y + pad), bracketCol, 2);
-    cv::line(canvas, cv::Point(screenRect.x + pad, screenRect.y + pad), cv::Point(screenRect.x + pad, screenRect.y + pad + bLen), bracketCol, 2);
-    // Top-Right ]
-    cv::line(canvas, cv::Point(screenRect.x + screenRect.width - pad, screenRect.y + pad), cv::Point(screenRect.x + screenRect.width - pad - bLen, screenRect.y + pad), bracketCol, 2);
-    cv::line(canvas, cv::Point(screenRect.x + screenRect.width - pad, screenRect.y + pad), cv::Point(screenRect.x + screenRect.width - pad, screenRect.y + pad + bLen), bracketCol, 2);
-    // Bottom-Left [
-    cv::line(canvas, cv::Point(screenRect.x + pad, screenRect.y + screenRect.height - pad), cv::Point(screenRect.x + pad + bLen, screenRect.y + screenRect.height - pad), bracketCol, 2);
-    cv::line(canvas, cv::Point(screenRect.x + pad, screenRect.y + screenRect.height - pad), cv::Point(screenRect.x + pad, screenRect.y + screenRect.height - pad - bLen), bracketCol, 2);
-    // Bottom-Right ]
-    cv::line(canvas, cv::Point(screenRect.x + screenRect.width - pad, screenRect.y + screenRect.height - pad), cv::Point(screenRect.x + screenRect.width - pad - bLen, screenRect.y + screenRect.height - pad), bracketCol, 2);
-    cv::line(canvas, cv::Point(screenRect.x + screenRect.width - pad, screenRect.y + screenRect.height - pad), cv::Point(screenRect.x + screenRect.width - pad, screenRect.y + screenRect.height - pad - bLen), bracketCol, 2);
-
-    // Subtle Center Crosshair
     int cx = screenRect.x + screenRect.width / 2;
     int cy = screenRect.y + screenRect.height / 2;
-    cv::line(canvas, cv::Point(cx - 12, cy), cv::Point(cx + 12, cy), cv::Scalar(240, 240, 240), 1);
-    cv::line(canvas, cv::Point(cx, cy - 12), cv::Point(cx, cy + 12), cv::Scalar(240, 240, 240), 1);
-    cv::circle(canvas, cv::Point(cx, cy), 5, cv::Scalar(240, 240, 240), 1);
+    cv::line(canvas, cv::Point(cx - 10, cy), cv::Point(cx + 10, cy), cv::Scalar(220, 220, 220), 1);
+    cv::line(canvas, cv::Point(cx, cy - 10), cv::Point(cx, cy + 10), cv::Scalar(220, 220, 220), 1);
+    cv::circle(canvas, cv::Point(cx, cy), 5, cv::Scalar(220, 220, 220), 1);
 
     // -------------------------------------------------------------------------
-    // REAL-TIME TIMESTAMP OSD
+    // 6. Live Camcorder Timestamp
     // -------------------------------------------------------------------------
     std::time_t now = std::time(nullptr);
     std::tm* localTime = std::localtime(&now);
     char timeBuffer[64];
     std::strftime(timeBuffer, sizeof(timeBuffer), "%b %d %Y  %I:%M:%S %p", localTime);
 
-    cv::Rect timeBox(screenRect.x + 18, screenRect.y + screenRect.height - 36, 320, 24);
+    cv::Rect timeBox(screenRect.x + 15, screenRect.y + screenRect.height - 35, 330, 26);
     cv::rectangle(canvas, timeBox, cv::Scalar(0, 0, 0), -1);
     cv::rectangle(canvas, timeBox, cv::Scalar(0, 140, 230), 1);
-    cv::putText(canvas, timeBuffer, cv::Point(timeBox.x + 8, timeBox.y + 17), 
-               cv::FONT_HERSHEY_PLAIN, 1.15, cv::Scalar(0, 180, 255), 2);
+    cv::putText(canvas, timeBuffer, cv::Point(timeBox.x + 8, timeBox.y + 18), 
+               cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(0, 180, 255), 2);
 
     // -------------------------------------------------------------------------
-    // BOTTOM CHASSIS BAR: Camcorder Telemetry
-    // -------------------------------------------------------------------------
-    int botY = screenRect.y + screenRect.height + 26;
-    cv::putText(canvas, "BATT [||||] 92%", cv::Point(245, botY), cv::FONT_HERSHEY_PLAIN, 1.1, cv::Scalar(80, 220, 120), 1);
-    cv::putText(canvas, "TAPE COUNTER: 0142", cv::Point(440, botY), cv::FONT_HERSHEY_PLAIN, 1.1, cv::Scalar(170, 170, 180), 1);
-    cv::putText(canvas, "AUDIO: [||||||..] -12dB", cv::Point(670, botY), cv::FONT_HERSHEY_PLAIN, 1.1, cv::Scalar(0, 200, 255), 1);
-    cv::putText(canvas, "IRIS: f/2.8", cv::Point(930, botY), cv::FONT_HERSHEY_PLAIN, 1.1, cv::Scalar(170, 170, 180), 1);
-
-    // -------------------------------------------------------------------------
-    // DECK CONTROL CARDS (Physical Tactile Keys)
+    // 7. Dashboard Cards
     // -------------------------------------------------------------------------
     auto drawCard = [&](const cv::Rect& r, const std::string& title, 
                         const std::string& sub1, const std::string& sub2, 
                         cv::Scalar accentColor) {
-        // Dark tactile button body
-        cv::rectangle(canvas, r, cv::Scalar(26, 26, 30), -1);
+        cv::rectangle(canvas, r, cv::Scalar(30, 30, 36), -1);
         cv::rectangle(canvas, r, accentColor, 2);
 
-        // Top edge highlight line (gives 3D physical key bevel)
-        cv::line(canvas, cv::Point(r.x + 2, r.y + 2), cv::Point(r.x + r.width - 2, r.y + 2), cv::Scalar(75, 75, 85), 2);
+        // Title
+        cv::putText(canvas, title, cv::Point(r.x + 16, r.y + 36), 
+                   cv::FONT_HERSHEY_SIMPLEX, 0.65, cv::Scalar(245, 245, 245), 2);
 
-        // Card Title
-        cv::putText(canvas, title, cv::Point(r.x + 16, r.y + 34), 
-                   cv::FONT_HERSHEY_SIMPLEX, 0.62, cv::Scalar(245, 245, 245), 2);
+        // Subtitle lines
+        cv::putText(canvas, sub1, cv::Point(r.x + 16, r.y + 75), 
+                   cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(180, 180, 185), 1);
+        cv::putText(canvas, sub2, cv::Point(r.x + 16, r.y + 105), 
+                   cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(180, 180, 185), 1);
 
-        // Subtitles (independent lines to avoid any '?' symbol issues)
-        cv::putText(canvas, sub1, cv::Point(r.x + 16, r.y + 70), 
-                   cv::FONT_HERSHEY_PLAIN, 1.15, cv::Scalar(170, 170, 175), 1);
-        cv::putText(canvas, sub2, cv::Point(r.x + 16, r.y + 98), 
-                   cv::FONT_HERSHEY_PLAIN, 1.15, cv::Scalar(170, 170, 175), 1);
-
-        // Action prompt
-        cv::putText(canvas, "CLICK TO ENTER >", cv::Point(r.x + 16, r.y + 155), 
+        // Click action
+        cv::putText(canvas, "CLICK TO ENTER >", cv::Point(r.x + 16, r.y + 165), 
                    cv::FONT_HERSHEY_PLAIN, 1.15, accentColor, 1);
     };
 
