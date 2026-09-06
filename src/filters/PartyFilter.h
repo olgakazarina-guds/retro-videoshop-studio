@@ -4,7 +4,7 @@
 #include <opencv2/opencv.hpp>
 
 // PartyFilter inherits from BaseFilter ("Is-A" Polymorphism relationship).
-// It overrides the pure virtual method 'process()' to apply neon and color-inversion effects.
+// It overrides the pure virtual method 'process()' to apply split-tone neon and edge highlights.
 class PartyFilter : public BaseFilter
 {
 public:
