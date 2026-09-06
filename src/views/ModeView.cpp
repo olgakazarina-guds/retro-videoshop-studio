@@ -1,4 +1,5 @@
 #include "ModeView.h"
+#include "CameraChrome.h"
 #include <algorithm>
 
 ModeView::ModeView() : currentFilter(nullptr), intensity(0.75f), modeName("Default Mode") {}
@@ -43,4 +44,6 @@ void ModeView::draw(cv::Mat& canvas, const cv::Mat& currentFrame) {
 
     // Footer instruction
     cv::putText(canvas, "[ESC] Return to Home View", cv::Point(140, 655), cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(160, 160, 160), 1);
+
+    drawCameraChrome(canvas, "MODE VIEW // FILM DECK");
 }
