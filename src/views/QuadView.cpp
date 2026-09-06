@@ -18,28 +18,28 @@ void QuadView::draw(cv::Mat& canvas, const cv::Mat& currentFrame) {
 
     // Quadrant 0: Original Unaltered Feed
     halfFrame.copyTo(canvas(quad0));
-    cv::putText(canvas, "1. ORIGINAL FEED", cv::Point(20, 35), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 255), 2);
+    drawCameraBadge(canvas, "1. ORIGINAL FEED", cv::Point(24, 90), cv::Scalar(245, 245, 245));
 
     // Quadrant 1: 1950s Retro Filter
     cv::Mat retroOut = retroFilter.process(halfFrame, 0.85f);
     retroOut.copyTo(canvas(quad1));
-    cv::putText(canvas, "2. 1950s RETRO", cv::Point(660, 35), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(0, 200, 255), 2);
+    drawCameraBadge(canvas, "2. 1950s RETRO", cv::Point(664, 90), cv::Scalar(0, 200, 255));
 
     // Quadrant 2: Holiday Warmth Filter
     cv::Mat holidayOut = holidayFilter.process(halfFrame, 0.90f);
     holidayOut.copyTo(canvas(quad2));
-    cv::putText(canvas, "3. HOLIDAY WARMTH", cv::Point(20, 395), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(0, 165, 255), 2);
+    drawCameraBadge(canvas, "3. HOLIDAY WARMTH", cv::Point(24, 450), cv::Scalar(0, 185, 255));
 
     // Quadrant 3: Party Neon Filter
     cv::Mat partyOut = partyFilter.process(halfFrame, 0.95f);
     partyOut.copyTo(canvas(quad3));
-    cv::putText(canvas, "4. PARTY NEON", cv::Point(660, 395), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 100, 255), 2);
+    drawCameraBadge(canvas, "4. PARTY NEON", cv::Point(664, 450), cv::Scalar(255, 155, 255));
 
     // Draw white divider lines separating the 4 quadrants
     cv::line(canvas, cv::Point(640, 0), cv::Point(640, 720), cv::Scalar(255, 255, 255), 2);
     cv::line(canvas, cv::Point(0, 360), cv::Point(1280, 360), cv::Scalar(255, 255, 255), 2);
 
-    drawCameraChrome(canvas, "QUAD VIEW // 4-WAY MONITOR");
+    drawCameraChrome(canvas);
 }
 
 int QuadView::handleMouseClicked(int x, int y) {
