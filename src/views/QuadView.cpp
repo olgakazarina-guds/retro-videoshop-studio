@@ -1,4 +1,5 @@
 #include "QuadView.h"
+#include "CameraChrome.h"
 
 QuadView::QuadView() {
     // 2x2 Matrix Slicing Coordinates on a 1280x720 canvas
@@ -37,6 +38,8 @@ void QuadView::draw(cv::Mat& canvas, const cv::Mat& currentFrame) {
     // Draw white divider lines separating the 4 quadrants
     cv::line(canvas, cv::Point(640, 0), cv::Point(640, 720), cv::Scalar(255, 255, 255), 2);
     cv::line(canvas, cv::Point(0, 360), cv::Point(1280, 360), cv::Scalar(255, 255, 255), 2);
+
+    drawCameraChrome(canvas, "QUAD VIEW // 4-WAY MONITOR");
 }
 
 int QuadView::handleMouseClicked(int x, int y) {

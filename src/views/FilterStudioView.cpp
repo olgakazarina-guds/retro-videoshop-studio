@@ -1,4 +1,5 @@
 #include "FilterStudioView.h"
+#include "CameraChrome.h"
 
 void FilterStudioView::draw(cv::Mat& canvas, const cv::Mat& currentFrame) {
     if (currentFrame.empty()) return;
@@ -23,4 +24,6 @@ void FilterStudioView::draw(cv::Mat& canvas, const cv::Mat& currentFrame) {
     cv::putText(canvas, "[I] Toggle Inversion",      cv::Point(sx, 300), cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(180, 180, 180), 1);
     cv::putText(canvas, "[R] Reset to Default",      cv::Point(sx, 340), cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(0, 165, 255), 1);
     cv::putText(canvas, "[ESC] Return to Home",      cv::Point(sx, 400), cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(150, 150, 150), 1);
+
+    drawCameraChrome(canvas, "FILTER STUDIO // CONTROL DECK");
 }
