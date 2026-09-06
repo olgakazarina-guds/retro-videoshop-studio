@@ -25,5 +25,5 @@ void FilterStudioView::draw(cv::Mat& canvas, const cv::Mat& currentFrame) {
     cv::putText(canvas, "[R] Reset to Default",      cv::Point(sx, 340), cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(0, 165, 255), 1);
     cv::putText(canvas, "[ESC] Return to Home",      cv::Point(sx, 400), cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(150, 150, 150), 1);
 
-    drawCameraChrome(canvas, "FILTER STUDIO // CONTROL DECK");
+    drawCameraChrome(canvas);
 }
