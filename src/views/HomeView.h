@@ -1,31 +1,33 @@
 #pragma once
 
+// OpenCV library header for 2D matrix drawing and text rendering
 #include <opencv2/opencv.hpp>
 #include <string>
 
-// Action enum for ofApp state switching
+// Enum representing the 4 clickable cards on the dashboard
 enum class HomeAction {
     NONE = 0,
-    PLAY_VIEW,
-    SELECT_MODE,
-    UPLOAD_STREAM,
-    MANUAL_FILTER
+    PLAY_VIEW,       // Card 1: 2x2 Quad Matrix
+    SELECT_MODE,     // Card 2: Presets (Retro, Holiday, Party)
+    UPLOAD_STREAM,   // Card 3: Media input switcher
+    MANUAL_FILTER    // Card 4: Filter-All manual sandbox
 };
 
 class HomeView {
 public:
+    // Constructor: initializes button bounding boxes
     HomeView();
 
-    // Renders the viewfinder and dashboard onto the canvas
+    // Draws camera chassis, live video, blinking tally, and cards onto canvas
     void draw(cv::Mat& canvas, const cv::Mat& previewFrame);
 
-    // Mouse click hit test for dashboard cards
+    // Checks if the user clicked inside any of the 4 cards
     HomeAction handleMouseClicked(int x, int y);
 
 private:
-    int frameCounter;
+    int frameCounter; // Counter used to time the blinking REC light
 
-    // Clickable card bounding boxes on 1280x720 canvas
+    // cv::Rect stores (x, y, width, height) for hit-testing mouse clicks
     cv::Rect btnPlayView;
     cv::Rect btnSelectMode;
     cv::Rect btnUploadStream;
