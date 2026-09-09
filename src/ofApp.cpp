@@ -22,14 +22,19 @@ void ofApp::setup() {
     displayImage.allocate(1280, 720, OF_IMAGE_COLOR);
 
     // 6. Load default test media (falls back to a vintage color-bar pattern if missing)
-    mediaManager.loadImage("Test.jpg");
+    // mediaManager.loadImage("Test.jpg");
 }
 
 // ==============================================================================
 // UPDATE: Called continuously to calculate logic and process video frames
 // ==============================================================================
 void ofApp::update() {
-    // Get the current video or photo frame from our media manager
+	ofScopedLock lock(mutex); // Ensure thread-safe access to frameBuffer
+
+	// 1. Update the media manager to fetch the latest video frame if a video is playing
+	mediaManager.update();
+	
+	// Get the current video or photo frame from our media manager
     cv::Mat currentFrame = mediaManager.getCurrentFrame();
 
     // Delegate rendering to whichever screen is currently active
@@ -60,6 +65,7 @@ void ofApp::update() {
 // DRAW: Sends the finished OpenCV frameBuffer to the screen via openFrameworks
 // ==============================================================================
 void ofApp::draw() {
+	ofScopedLock lock(mutex); // Ensure thread-safe access to frameBuffer
     // 1. Reset color tint to pure white so the image displays at full brightness
     ofSetColor(255, 255, 255, 255);
 
@@ -70,8 +76,17 @@ void ofApp::draw() {
         cv::Mat displayMat;
         cv::cvtColor(frameBuffer, displayMat, cv::COLOR_BGR2RGB);
 
+		// Force a continuous clone to strip any Open CV row-padding bytes
+		// to prevent a crash when copying to openFrameworks ofImage
+		cv::Mat continuousMat = displayMat.clone();
+
+		// Safely allocate or match displayImage dimensions if they ever change
+		if (!displayImage.isAllocated() || displayImage.getWidth() != continuousMat.cols || displayImage.getHeight() != continuousMat.rows) {
+			displayImage.allocate(continuousMat.cols, continuousMat.rows, OF_IMAGE_COLOR);
+		}
+
         // 3. Copy CPU pixels into openFrameworks ofImage
-        displayImage.setFromPixels(displayMat.data, displayMat.cols, displayMat.rows, OF_IMAGE_COLOR);
+        displayImage.setFromPixels(continuousMat.data, continuousMat.cols, continuousMat.rows, OF_IMAGE_COLOR);
 
         // 4. CRITICAL: update() transfers the pixel data to the graphics card (GPU).
         // Without this line, the screen remains blank gray!
@@ -98,8 +113,9 @@ void ofApp::mousePressed(int x, int y, int button) {
             currentState = AppState::MODE_VIEW;
         } 
         else if (action == HomeAction::UPLOAD_STREAM) {
-            mediaManager.loadImage("Test.jpg");
-            currentState = AppState::FILTER_STUDIO;
+            if (mediaManager.openFileDialog()) {
+                currentState = AppState::FILTER_STUDIO;
+            }
         } 
         else if (action == HomeAction::MANUAL_FILTER) {
             currentState = AppState::FILTER_STUDIO;

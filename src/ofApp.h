@@ -43,6 +43,10 @@ private:
     // ofImage: openFrameworks OpenGL texture used to send pixels to your GPU/screen
     ofImage displayImage;
 
+	//Mutex to thread-safe access between update() and draw() methods
+	ofMutex mutex;
+
+
 public:
     // Core openFrameworks lifecycle methods
     void setup() override;
