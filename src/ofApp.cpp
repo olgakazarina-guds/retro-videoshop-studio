@@ -80,44 +80,24 @@ void ofApp::update() {
         const int controlY = currentState == AppState::QUAD_VIEW ? 696 : 650;
         const int buttonWidth = 42;
         const int buttonHeight = 36;
-        const int buttonGap = 8;
-        const int firstButtonX = (kCanvasWidth - (buttonWidth * 2 + buttonGap)) / 2;
-        const int secondButtonX = firstButtonX + buttonWidth + buttonGap;
+        const int buttonX = (kCanvasWidth - buttonWidth) / 2;
 
-        auto drawRotateButton = [&](int centerX, bool clockwise) {
-            cv::Rect button(centerX, controlY - buttonHeight / 2, buttonWidth, buttonHeight);
-            cv::rectangle(frameBuffer, button, controlFill, -1);
-            cv::rectangle(frameBuffer, button, controlBorder, 1);
+        cv::Rect button(buttonX, controlY - buttonHeight / 2, buttonWidth, buttonHeight);
+        cv::rectangle(frameBuffer, button, controlFill, -1);
+        cv::rectangle(frameBuffer, button, controlBorder, 1);
 
-            // An arc plus an arrowhead is easier to recognize as rotation than
-            // a plain left/right navigation symbol.
-            const cv::Point buttonCenter(button.x + button.width / 2, button.y + button.height / 2);
-            // Use the same three-quarter circle for both buttons. The
-            // arrowhead, not a reversed OpenCV arc range, communicates the
-            // direction and keeps the left icon fully visible.
-            cv::ellipse(frameBuffer, buttonCenter,
-                        cv::Size(12, 12), 0, 45, 315,
-                        controlText, 2);
+        // A single clockwise arrow keeps the control clear and avoids the
+        // clipped left-arrow rendering that appeared on some screens.
+        const cv::Point buttonCenter(button.x + button.width / 2, button.y + button.height / 2);
+        cv::ellipse(frameBuffer, buttonCenter, cv::Size(12, 12), 0, 45, 315,
+                    controlText, 2);
 
-            std::vector<cv::Point> arrowhead;
-            if (clockwise) {
-                arrowhead = {
-                    cv::Point(buttonCenter.x + 11, buttonCenter.y - 7),
-                    cv::Point(buttonCenter.x + 3, buttonCenter.y - 7),
-                    cv::Point(buttonCenter.x + 9, buttonCenter.y - 13)
-                };
-            } else {
-                arrowhead = {
-                    cv::Point(buttonCenter.x - 11, buttonCenter.y - 7),
-                    cv::Point(buttonCenter.x - 3, buttonCenter.y - 7),
-                    cv::Point(buttonCenter.x - 9, buttonCenter.y - 13)
-                };
-            }
-            cv::fillConvexPoly(frameBuffer, arrowhead, controlText);
+        const std::vector<cv::Point> arrowhead = {
+            cv::Point(buttonCenter.x + 11, buttonCenter.y - 7),
+            cv::Point(buttonCenter.x + 3, buttonCenter.y - 7),
+            cv::Point(buttonCenter.x + 9, buttonCenter.y - 13)
         };
-
-        drawRotateButton(firstButtonX, false);
-        drawRotateButton(secondButtonX, true);
+        cv::fillConvexPoly(frameBuffer, arrowhead, controlText);
     }
 }
 
@@ -183,13 +163,7 @@ void ofApp::mousePressed(int x, int y, int button) {
     const int rotationControlY = currentState == AppState::QUAD_VIEW ? 696 : 650;
     if (currentState != AppState::HOME &&
         canvasY >= rotationControlY - 18 && canvasY < rotationControlY + 18 &&
-        canvasX >= 594 && canvasX < 636) {
-        mediaManager.rotateLeft();
-        return;
-    }
-    if (currentState != AppState::HOME &&
-        canvasY >= rotationControlY - 18 && canvasY < rotationControlY + 18 &&
-        canvasX >= 644 && canvasX < 686) {
+        canvasX >= 619 && canvasX < 661) {
         mediaManager.rotateRight();
         return;
     }
@@ -238,11 +212,8 @@ void ofApp::keyPressed(int key) {
     if (key == OF_KEY_ESC) {
         currentState = AppState::HOME;
     }
-    else if (key == '[') {
-        // '[' and ']' rotate the media without changing the UI orientation.
-        mediaManager.rotateLeft();
-    }
     else if (key == ']') {
+        // ']' rotates the media without changing the UI orientation.
         mediaManager.rotateRight();
     }
     // In Mode View: '+' increases intensity, '-' decreases intensity
