@@ -6,12 +6,14 @@ MediaSourceManager::MediaSourceManager() {
 		}
 
 bool MediaSourceManager::openFileDialog() {
+    // Ask the operating system to let the user choose a media file.
     ofFileDialogResult result = ofSystemLoadDialog("Select an image or video source");
     
     if (result.bSuccess) {
         std::string filePath = result.getPath();
         std::string ext = ofToLower(ofFilePath::getFileExt(filePath));
         
+        // The file extension tells us which loader should handle the source.
         if (ext == "jpg" || ext == "jpeg" || ext == "png") {
             return loadImage(filePath);
         } 
@@ -38,7 +40,8 @@ bool MediaSourceManager::loadImage(const std::string& path) {
         ofPixels& pixels = img.getPixels();
         int srcType = (pixels.getImageType() == OF_IMAGE_COLOR_ALPHA) ? CV_8UC4 : CV_8UC3;
         
-        // Wrap raw image data into an OpenCV cv::Mat
+        // Wrap the OpenFrameworks pixel buffer in an OpenCV matrix.
+        // This lets the existing OpenCV filters work on the selected image.
         cv::Mat temp(static_cast<int>(pixels.getHeight()), static_cast<int>(pixels.getWidth()), srcType, pixels.getData());
         
         // Convert to standard OpenCV BGR format
@@ -98,6 +101,7 @@ bool MediaSourceManager::openWebcam(int deviceID) {
 }
 
 void MediaSourceManager::rotateLeft() {
+    // Four quarter-turns bring the image back to its original orientation.
     rotationQuarterTurns = (rotationQuarterTurns + 3) % 4;
     applyRotation();
 }
@@ -113,6 +117,8 @@ void MediaSourceManager::applyRotation() {
     }
 
     cv::Mat rotated;
+    // OpenCV creates a new matrix with the requested orientation.
+    // We rotate only the media frame, not the application window or UI.
     switch (rotationQuarterTurns) {
         case 1:
             cv::rotate(currentFrame, rotated, cv::ROTATE_90_CLOCKWISE);
@@ -129,11 +135,13 @@ void MediaSourceManager::applyRotation() {
 
 void MediaSourceManager::update() {
     if (activeSource == VIDEO) {
+        // Video players need to advance one frame at a time in update().
         videoPlayer.update();
         if (videoPlayer.isFrameNew()) {
             ofPixels& pixels = videoPlayer.getPixels();
             cv::Mat temp(static_cast<int>(pixels.getHeight()), static_cast<int>(pixels.getWidth()), CV_8UC3, reinterpret_cast<void*>(pixels.getData()));
             cv::cvtColor(temp, currentFrame, cv::COLOR_RGB2BGR);
+            // Apply the user's selected orientation to every new video frame.
             applyRotation();
         }
     } else if (activeSource == WEBCAM) {

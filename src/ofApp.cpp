@@ -1,6 +1,7 @@
 #include "ofApp.h"
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 namespace {
 constexpr int kCanvasWidth = 1280;
@@ -68,16 +69,48 @@ void ofApp::update() {
             break;
     }
 
-    // The UI stays landscape while the media frame can rotate in 90-degree
-    // increments for portrait footage.
-    const cv::Scalar controlFill(24, 24, 30);
-    const cv::Scalar controlText(230, 230, 230);
-    cv::rectangle(frameBuffer, cv::Rect(1110, 18, 62, 38), controlFill, -1);
-    cv::rectangle(frameBuffer, cv::Rect(1110, 18, 62, 38), cv::Scalar(110, 110, 120), 1);
-    cv::putText(frameBuffer, "<", cv::Point(1130, 45), cv::FONT_HERSHEY_SIMPLEX, 0.8, controlText, 2);
-    cv::rectangle(frameBuffer, cv::Rect(1180, 18, 62, 38), controlFill, -1);
-    cv::rectangle(frameBuffer, cv::Rect(1180, 18, 62, 38), cv::Scalar(110, 110, 120), 1);
-    cv::putText(frameBuffer, ">", cv::Point(1200, 45), cv::FONT_HERSHEY_SIMPLEX, 0.8, controlText, 2);
+    // Keep rotation controls in the empty top rail so they never cover a title,
+    // intensity label, or media preview. They are not needed on the Home
+    // screen because rotation is useful after a source has been selected.
+    if (currentState != AppState::HOME) {
+        const cv::Scalar controlFill(24, 24, 30);
+        const cv::Scalar controlBorder(110, 110, 120);
+        const cv::Scalar controlText(230, 230, 230);
+        const int controlY = 40;
+
+        auto drawRotateButton = [&](int centerX, bool clockwise) {
+            cv::Rect button(centerX - 30, controlY - 30, 60, 60);
+            cv::rectangle(frameBuffer, button, controlFill, -1);
+            cv::rectangle(frameBuffer, button, controlBorder, 1);
+
+            // An arc plus an arrowhead is easier to recognize as rotation than
+            // a plain left/right navigation symbol.
+            const int startAngle = clockwise ? 40 : 220;
+            const int endAngle = clockwise ? 320 : 140;
+            cv::ellipse(frameBuffer, cv::Point(centerX, controlY),
+                        cv::Size(18, 18), 0, startAngle, endAngle,
+                        controlText, 3);
+
+            std::vector<cv::Point> arrowhead;
+            if (clockwise) {
+                arrowhead = {
+                    cv::Point(centerX + 19, controlY - 5),
+                    cv::Point(centerX + 6, controlY - 9),
+                    cv::Point(centerX + 14, controlY - 19)
+                };
+            } else {
+                arrowhead = {
+                    cv::Point(centerX - 19, controlY + 5),
+                    cv::Point(centerX - 6, controlY + 9),
+                    cv::Point(centerX - 14, controlY + 19)
+                };
+            }
+            cv::fillConvexPoly(frameBuffer, arrowhead, controlText);
+        };
+
+        drawRotateButton(680, false);
+        drawRotateButton(760, true);
+    }
 }
 
 // ==============================================================================
@@ -137,11 +170,15 @@ void ofApp::mousePressed(int x, int y, int button) {
     const int canvasX = static_cast<int>((x - offsetX) / scale);
     const int canvasY = static_cast<int>((y - offsetY) / scale);
 
-    if (canvasY >= 18 && canvasY < 56 && canvasX >= 1110 && canvasX < 1172) {
+    // The window may be resized, but the UI is designed in 1280x720 coordinates.
+    // Convert the click back into those canvas coordinates before hit-testing.
+    if (currentState != AppState::HOME &&
+        canvasY >= 10 && canvasY < 70 && canvasX >= 650 && canvasX < 710) {
         mediaManager.rotateLeft();
         return;
     }
-    if (canvasY >= 18 && canvasY < 56 && canvasX >= 1180 && canvasX < 1242) {
+    if (currentState != AppState::HOME &&
+        canvasY >= 10 && canvasY < 70 && canvasX >= 730 && canvasX < 790) {
         mediaManager.rotateRight();
         return;
     }
@@ -191,6 +228,7 @@ void ofApp::keyPressed(int key) {
         currentState = AppState::HOME;
     }
     else if (key == '[') {
+        // '[' and ']' rotate the media without changing the UI orientation.
         mediaManager.rotateLeft();
     }
     else if (key == ']') {
