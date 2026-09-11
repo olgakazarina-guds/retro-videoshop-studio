@@ -77,39 +77,45 @@ void ofApp::update() {
         const cv::Scalar controlBorder(110, 110, 120);
         const cv::Scalar controlText(230, 230, 230);
         const int controlY = 40;
+        const int buttonWidth = 64;
+        const int buttonHeight = 54;
+        const int buttonGap = 10;
+        const int firstButtonX = (kCanvasWidth - (buttonWidth * 2 + buttonGap)) / 2;
+        const int secondButtonX = firstButtonX + buttonWidth + buttonGap;
 
         auto drawRotateButton = [&](int centerX, bool clockwise) {
-            cv::Rect button(centerX - 30, controlY - 30, 60, 60);
+            cv::Rect button(centerX, controlY - buttonHeight / 2, buttonWidth, buttonHeight);
             cv::rectangle(frameBuffer, button, controlFill, -1);
             cv::rectangle(frameBuffer, button, controlBorder, 1);
 
             // An arc plus an arrowhead is easier to recognize as rotation than
             // a plain left/right navigation symbol.
+            const cv::Point buttonCenter(button.x + button.width / 2, button.y + button.height / 2);
             const int startAngle = clockwise ? 40 : 220;
             const int endAngle = clockwise ? 320 : 140;
-            cv::ellipse(frameBuffer, cv::Point(centerX, controlY),
-                        cv::Size(18, 18), 0, startAngle, endAngle,
+            cv::ellipse(frameBuffer, buttonCenter,
+                        cv::Size(17, 17), 0, startAngle, endAngle,
                         controlText, 3);
 
             std::vector<cv::Point> arrowhead;
             if (clockwise) {
                 arrowhead = {
-                    cv::Point(centerX + 19, controlY - 5),
-                    cv::Point(centerX + 6, controlY - 9),
-                    cv::Point(centerX + 14, controlY - 19)
+                    cv::Point(buttonCenter.x + 17, buttonCenter.y - 5),
+                    cv::Point(buttonCenter.x + 6, buttonCenter.y - 8),
+                    cv::Point(buttonCenter.x + 13, buttonCenter.y - 17)
                 };
             } else {
                 arrowhead = {
-                    cv::Point(centerX - 19, controlY + 5),
-                    cv::Point(centerX - 6, controlY + 9),
-                    cv::Point(centerX - 14, controlY + 19)
+                    cv::Point(buttonCenter.x - 17, buttonCenter.y + 5),
+                    cv::Point(buttonCenter.x - 6, buttonCenter.y + 8),
+                    cv::Point(buttonCenter.x - 13, buttonCenter.y + 17)
                 };
             }
             cv::fillConvexPoly(frameBuffer, arrowhead, controlText);
         };
 
-        drawRotateButton(680, false);
-        drawRotateButton(760, true);
+        drawRotateButton(firstButtonX, false);
+        drawRotateButton(secondButtonX, true);
     }
 }
 
@@ -173,12 +179,12 @@ void ofApp::mousePressed(int x, int y, int button) {
     // The window may be resized, but the UI is designed in 1280x720 coordinates.
     // Convert the click back into those canvas coordinates before hit-testing.
     if (currentState != AppState::HOME &&
-        canvasY >= 10 && canvasY < 70 && canvasX >= 650 && canvasX < 710) {
+        canvasY >= 13 && canvasY < 67 && canvasX >= 571 && canvasX < 635) {
         mediaManager.rotateLeft();
         return;
     }
     if (currentState != AppState::HOME &&
-        canvasY >= 10 && canvasY < 70 && canvasX >= 730 && canvasX < 790) {
+        canvasY >= 13 && canvasY < 67 && canvasX >= 645 && canvasX < 709) {
         mediaManager.rotateRight();
         return;
     }
