@@ -92,24 +92,25 @@ void ofApp::update() {
             // An arc plus an arrowhead is easier to recognize as rotation than
             // a plain left/right navigation symbol.
             const cv::Point buttonCenter(button.x + button.width / 2, button.y + button.height / 2);
-            const int startAngle = clockwise ? 35 : 215;
-            const int endAngle = clockwise ? 325 : 145;
+            // Use the same three-quarter circle for both buttons. The
+            // arrowhead, not a reversed OpenCV arc range, communicates the
+            // direction and keeps the left icon fully visible.
             cv::ellipse(frameBuffer, buttonCenter,
-                        cv::Size(12, 12), 0, startAngle, endAngle,
+                        cv::Size(12, 12), 0, 45, 315,
                         controlText, 2);
 
             std::vector<cv::Point> arrowhead;
             if (clockwise) {
                 arrowhead = {
-                    cv::Point(buttonCenter.x + 12, buttonCenter.y - 3),
-                    cv::Point(buttonCenter.x + 4, buttonCenter.y - 7),
-                    cv::Point(buttonCenter.x + 9, buttonCenter.y - 12)
+                    cv::Point(buttonCenter.x + 11, buttonCenter.y - 7),
+                    cv::Point(buttonCenter.x + 3, buttonCenter.y - 7),
+                    cv::Point(buttonCenter.x + 9, buttonCenter.y - 13)
                 };
             } else {
                 arrowhead = {
-                    cv::Point(buttonCenter.x - 12, buttonCenter.y + 3),
-                    cv::Point(buttonCenter.x - 4, buttonCenter.y + 7),
-                    cv::Point(buttonCenter.x - 9, buttonCenter.y + 12)
+                    cv::Point(buttonCenter.x - 11, buttonCenter.y - 7),
+                    cv::Point(buttonCenter.x - 3, buttonCenter.y - 7),
+                    cv::Point(buttonCenter.x - 9, buttonCenter.y - 13)
                 };
             }
             cv::fillConvexPoly(frameBuffer, arrowhead, controlText);
