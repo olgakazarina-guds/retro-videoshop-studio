@@ -67,6 +67,17 @@ void ofApp::update() {
             studioView.draw(frameBuffer, currentFrame);
             break;
     }
+
+    // The UI stays landscape while the media frame can rotate in 90-degree
+    // increments for portrait footage.
+    const cv::Scalar controlFill(24, 24, 30);
+    const cv::Scalar controlText(230, 230, 230);
+    cv::rectangle(frameBuffer, cv::Rect(1110, 18, 62, 38), controlFill, -1);
+    cv::rectangle(frameBuffer, cv::Rect(1110, 18, 62, 38), cv::Scalar(110, 110, 120), 1);
+    cv::putText(frameBuffer, "<", cv::Point(1130, 45), cv::FONT_HERSHEY_SIMPLEX, 0.8, controlText, 2);
+    cv::rectangle(frameBuffer, cv::Rect(1180, 18, 62, 38), controlFill, -1);
+    cv::rectangle(frameBuffer, cv::Rect(1180, 18, 62, 38), cv::Scalar(110, 110, 120), 1);
+    cv::putText(frameBuffer, ">", cv::Point(1200, 45), cv::FONT_HERSHEY_SIMPLEX, 0.8, controlText, 2);
 }
 
 // ==============================================================================
@@ -126,6 +137,15 @@ void ofApp::mousePressed(int x, int y, int button) {
     const int canvasX = static_cast<int>((x - offsetX) / scale);
     const int canvasY = static_cast<int>((y - offsetY) / scale);
 
+    if (canvasY >= 18 && canvasY < 56 && canvasX >= 1110 && canvasX < 1172) {
+        mediaManager.rotateLeft();
+        return;
+    }
+    if (canvasY >= 18 && canvasY < 56 && canvasX >= 1180 && canvasX < 1242) {
+        mediaManager.rotateRight();
+        return;
+    }
+
     if (currentState == AppState::HOME) {
         // Ask HomeView which card was clicked in the fixed application canvas.
         HomeAction action = homeView.handleMouseClicked(canvasX, canvasY);
@@ -169,6 +189,12 @@ void ofApp::keyPressed(int key) {
     // Pressing ESC always brings the user back to the Home View
     if (key == OF_KEY_ESC) {
         currentState = AppState::HOME;
+    }
+    else if (key == '[') {
+        mediaManager.rotateLeft();
+    }
+    else if (key == ']') {
+        mediaManager.rotateRight();
     }
     // In Mode View: '+' increases intensity, '-' decreases intensity
     else if (currentState == AppState::MODE_VIEW) {
