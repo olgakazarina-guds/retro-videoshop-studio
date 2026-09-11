@@ -31,6 +31,7 @@ void FilterStudioView::draw(cv::Mat& canvas, const cv::Mat& currentFrame) {
                   manualFilter.getBrightness(),
                   manualFilter.getContrast(),
                   manualFilter.getSharpness());
+    // Showing the live values makes the keyboard controls easier to understand.
     cv::putText(canvas, values, cv::Point(sx, 470), cv::FONT_HERSHEY_PLAIN, 1.35,
                 cv::Scalar(100, 255, 100), 1);
     cv::putText(canvas, manualFilter.isInverted() ? "Invert: ON" : "Invert: OFF",

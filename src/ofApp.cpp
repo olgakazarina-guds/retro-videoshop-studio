@@ -137,6 +137,8 @@ void ofApp::mousePressed(int x, int y, int button) {
     const int canvasX = static_cast<int>((x - offsetX) / scale);
     const int canvasY = static_cast<int>((y - offsetY) / scale);
 
+    // The window may be resized, but the UI is designed in 1280x720 coordinates.
+    // Convert the click back into those canvas coordinates before hit-testing.
     if (canvasY >= 18 && canvasY < 56 && canvasX >= 1110 && canvasX < 1172) {
         mediaManager.rotateLeft();
         return;
@@ -191,6 +193,7 @@ void ofApp::keyPressed(int key) {
         currentState = AppState::HOME;
     }
     else if (key == '[') {
+        // '[' and ']' rotate the media without changing the UI orientation.
         mediaManager.rotateLeft();
     }
     else if (key == ']') {
