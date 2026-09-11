@@ -47,6 +47,7 @@ bool MediaSourceManager::loadImage(const std::string& path) {
         } else {
             cv::cvtColor(temp, currentFrame, cv::COLOR_RGB2BGR);
         }
+        applyRotation();
 		activeSource = IMAGE;
 		return true;
 	}
@@ -96,6 +97,36 @@ bool MediaSourceManager::openWebcam(int deviceID) {
     return false;
 }
 
+void MediaSourceManager::rotateLeft() {
+    rotationQuarterTurns = (rotationQuarterTurns + 3) % 4;
+    applyRotation();
+}
+
+void MediaSourceManager::rotateRight() {
+    rotationQuarterTurns = (rotationQuarterTurns + 1) % 4;
+    applyRotation();
+}
+
+void MediaSourceManager::applyRotation() {
+    if (currentFrame.empty() || rotationQuarterTurns == 0) {
+        return;
+    }
+
+    cv::Mat rotated;
+    switch (rotationQuarterTurns) {
+        case 1:
+            cv::rotate(currentFrame, rotated, cv::ROTATE_90_CLOCKWISE);
+            break;
+        case 2:
+            cv::rotate(currentFrame, rotated, cv::ROTATE_180);
+            break;
+        case 3:
+            cv::rotate(currentFrame, rotated, cv::ROTATE_90_COUNTERCLOCKWISE);
+            break;
+    }
+    currentFrame = rotated;
+}
+
 void MediaSourceManager::update() {
     if (activeSource == VIDEO) {
         videoPlayer.update();
@@ -103,6 +134,7 @@ void MediaSourceManager::update() {
             ofPixels& pixels = videoPlayer.getPixels();
             cv::Mat temp(static_cast<int>(pixels.getHeight()), static_cast<int>(pixels.getWidth()), CV_8UC3, reinterpret_cast<void*>(pixels.getData()));
             cv::cvtColor(temp, currentFrame, cv::COLOR_RGB2BGR);
+            applyRotation();
         }
     } else if (activeSource == WEBCAM) {
         webcam.update();
@@ -110,6 +142,7 @@ void MediaSourceManager::update() {
             ofPixels& pixels = webcam.getPixels();
             cv::Mat temp(static_cast<int>(pixels.getHeight()), static_cast<int>(pixels.getWidth()), CV_8UC3, pixels.getData());
             cv::cvtColor(temp, currentFrame, cv::COLOR_RGB2BGR);
+            applyRotation();
         }
     }
 }

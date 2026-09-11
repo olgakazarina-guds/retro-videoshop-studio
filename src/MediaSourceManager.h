@@ -10,6 +10,8 @@ class MediaSourceManager
 		bool loadImage(const std::string& path);
 		bool loadVideo(const std::string& path);
 		bool openWebcam(int deviceID = 0);
+		void rotateLeft();
+		void rotateRight();
 		void update();
 		cv::Mat getCurrentFrame();
 
@@ -23,7 +25,8 @@ class MediaSourceManager
 	// Status to check which source is active
     enum SourceType { NONE, IMAGE, VIDEO, WEBCAM};
     SourceType activeSource = NONE;
+    int rotationQuarterTurns = 0;
 
 	void generateSMPTPattern(); // helper method to generate SMPTE color bars
+	void applyRotation();
 };
-
