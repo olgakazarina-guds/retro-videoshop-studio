@@ -33,6 +33,9 @@ void ofApp::setup() {
 // UPDATE: Called continuously to calculate logic and process video frames
 // ==============================================================================
 void ofApp::update() {
+    // Advance video playback before rendering the current frame.
+    mediaManager.update();
+
     // Get the current video or photo frame from our media manager
     cv::Mat currentFrame = mediaManager.getCurrentFrame();
 
@@ -74,8 +77,11 @@ void ofApp::draw() {
         cv::Mat displayMat;
         cv::cvtColor(frameBuffer, displayMat, cv::COLOR_BGR2RGB);
 
+        // Keep the upload buffer contiguous for safe OpenFrameworks texture updates.
+        cv::Mat continuousMat = displayMat.clone();
+
         // 3. Copy CPU pixels into openFrameworks ofImage
-        displayImage.setFromPixels(displayMat.data, displayMat.cols, displayMat.rows, OF_IMAGE_COLOR);
+        displayImage.setFromPixels(continuousMat.data, continuousMat.cols, continuousMat.rows, OF_IMAGE_COLOR);
 
         // 4. CRITICAL: update() transfers the pixel data to the graphics card (GPU).
         // Without this line, the screen remains blank gray!
@@ -102,8 +108,9 @@ void ofApp::mousePressed(int x, int y, int button) {
             currentState = AppState::MODE_VIEW;
         } 
         else if (action == HomeAction::UPLOAD_STREAM) {
-            mediaManager.loadImage("Test.jpg");
-            currentState = AppState::FILTER_STUDIO;
+            if (mediaManager.openFileDialog()) {
+                currentState = AppState::FILTER_STUDIO;
+            }
         } 
         else if (action == HomeAction::MANUAL_FILTER) {
             currentState = AppState::FILTER_STUDIO;
