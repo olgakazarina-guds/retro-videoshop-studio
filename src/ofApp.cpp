@@ -76,10 +76,10 @@ void ofApp::update() {
         const cv::Scalar controlFill(24, 24, 30);
         const cv::Scalar controlBorder(110, 110, 120);
         const cv::Scalar controlText(230, 230, 230);
-        const int controlY = 40;
-        const int buttonWidth = 64;
-        const int buttonHeight = 54;
-        const int buttonGap = 10;
+        const int controlY = 28;
+        const int buttonWidth = 42;
+        const int buttonHeight = 36;
+        const int buttonGap = 8;
         const int firstButtonX = (kCanvasWidth - (buttonWidth * 2 + buttonGap)) / 2;
         const int secondButtonX = firstButtonX + buttonWidth + buttonGap;
 
@@ -94,21 +94,21 @@ void ofApp::update() {
             const int startAngle = clockwise ? 40 : 220;
             const int endAngle = clockwise ? 320 : 140;
             cv::ellipse(frameBuffer, buttonCenter,
-                        cv::Size(17, 17), 0, startAngle, endAngle,
-                        controlText, 3);
+                        cv::Size(11, 11), 0, startAngle, endAngle,
+                        controlText, 2);
 
             std::vector<cv::Point> arrowhead;
             if (clockwise) {
                 arrowhead = {
-                    cv::Point(buttonCenter.x + 17, buttonCenter.y - 5),
-                    cv::Point(buttonCenter.x + 6, buttonCenter.y - 8),
-                    cv::Point(buttonCenter.x + 13, buttonCenter.y - 17)
+                    cv::Point(buttonCenter.x + 11, buttonCenter.y - 3),
+                    cv::Point(buttonCenter.x + 4, buttonCenter.y - 5),
+                    cv::Point(buttonCenter.x + 8, buttonCenter.y - 11)
                 };
             } else {
                 arrowhead = {
-                    cv::Point(buttonCenter.x - 17, buttonCenter.y + 5),
-                    cv::Point(buttonCenter.x - 6, buttonCenter.y + 8),
-                    cv::Point(buttonCenter.x - 13, buttonCenter.y + 17)
+                    cv::Point(buttonCenter.x - 11, buttonCenter.y + 3),
+                    cv::Point(buttonCenter.x - 4, buttonCenter.y + 5),
+                    cv::Point(buttonCenter.x - 8, buttonCenter.y + 11)
                 };
             }
             cv::fillConvexPoly(frameBuffer, arrowhead, controlText);
@@ -179,12 +179,12 @@ void ofApp::mousePressed(int x, int y, int button) {
     // The window may be resized, but the UI is designed in 1280x720 coordinates.
     // Convert the click back into those canvas coordinates before hit-testing.
     if (currentState != AppState::HOME &&
-        canvasY >= 13 && canvasY < 67 && canvasX >= 571 && canvasX < 635) {
+        canvasY >= 10 && canvasY < 46 && canvasX >= 594 && canvasX < 636) {
         mediaManager.rotateLeft();
         return;
     }
     if (currentState != AppState::HOME &&
-        canvasY >= 13 && canvasY < 67 && canvasX >= 645 && canvasX < 709) {
+        canvasY >= 10 && canvasY < 46 && canvasX >= 644 && canvasX < 686) {
         mediaManager.rotateRight();
         return;
     }
