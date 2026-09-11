@@ -1,5 +1,6 @@
 #include "FilterStudioView.h"
 #include "CameraChrome.h"
+#include <cstdio>
 
 void FilterStudioView::draw(cv::Mat& canvas, const cv::Mat& currentFrame) {
     if (currentFrame.empty()) return;
@@ -24,6 +25,17 @@ void FilterStudioView::draw(cv::Mat& canvas, const cv::Mat& currentFrame) {
     cv::putText(canvas, "[I] Toggle Inversion",      cv::Point(sx, 300), cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(180, 180, 180), 1);
     cv::putText(canvas, "[R] Reset to Default",      cv::Point(sx, 340), cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(0, 165, 255), 1);
     cv::putText(canvas, "[ESC] Return to Home",      cv::Point(sx, 400), cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(150, 150, 150), 1);
+
+    char values[128];
+    std::snprintf(values, sizeof(values), "B: %+.0f  C: %.1f  S: %.1f",
+                  manualFilter.getBrightness(),
+                  manualFilter.getContrast(),
+                  manualFilter.getSharpness());
+    cv::putText(canvas, values, cv::Point(sx, 470), cv::FONT_HERSHEY_PLAIN, 1.35,
+                cv::Scalar(100, 255, 100), 1);
+    cv::putText(canvas, manualFilter.isInverted() ? "Invert: ON" : "Invert: OFF",
+                cv::Point(sx, 505), cv::FONT_HERSHEY_PLAIN, 1.35,
+                manualFilter.isInverted() ? cv::Scalar(0, 200, 255) : cv::Scalar(180, 180, 180), 1);
 
     drawCameraChrome(canvas);
 }

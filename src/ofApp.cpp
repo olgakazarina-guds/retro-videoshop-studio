@@ -1,5 +1,11 @@
 #include "ofApp.h"
 #include <algorithm>
+#include <cmath>
+
+namespace {
+constexpr int kCanvasWidth = 1280;
+constexpr int kCanvasHeight = 720;
+}
 
 // ==============================================================================
 // SETUP: Called once when the application starts
@@ -87,8 +93,20 @@ void ofApp::draw() {
         // Without this line, the screen remains blank gray!
         displayImage.update();
 
-        // 5. Render the texture across the entire window
-        displayImage.draw(0, 0, ofGetWidth(), ofGetHeight());
+        // Preserve the 16:9 canvas aspect ratio in resized or portrait windows.
+        // The UI remains a landscape canvas with letterboxing rather than being
+        // stretched or rotated into an unusable coordinate system.
+        const float scale = std::min(static_cast<float>(ofGetWidth()) / kCanvasWidth,
+                                     static_cast<float>(ofGetHeight()) / kCanvasHeight);
+        const float drawWidth = kCanvasWidth * scale;
+        const float drawHeight = kCanvasHeight * scale;
+        const float offsetX = (ofGetWidth() - drawWidth) * 0.5f;
+        const float offsetY = (ofGetHeight() - drawHeight) * 0.5f;
+
+        ofSetColor(0, 0, 0, 255);
+        ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+        ofSetColor(255, 255, 255, 255);
+        displayImage.draw(offsetX, offsetY, drawWidth, drawHeight);
     }
 }
 
@@ -96,9 +114,21 @@ void ofApp::draw() {
 // MOUSE PRESSED: Handles clicks for navigating between screens
 // ==============================================================================
 void ofApp::mousePressed(int x, int y, int button) {
+    const float scale = std::min(static_cast<float>(ofGetWidth()) / kCanvasWidth,
+                                 static_cast<float>(ofGetHeight()) / kCanvasHeight);
+    const float offsetX = (ofGetWidth() - kCanvasWidth * scale) * 0.5f;
+    const float offsetY = (ofGetHeight() - kCanvasHeight * scale) * 0.5f;
+    if (scale <= 0.0f || x < offsetX || y < offsetY ||
+        x >= offsetX + kCanvasWidth * scale || y >= offsetY + kCanvasHeight * scale) {
+        return;
+    }
+
+    const int canvasX = static_cast<int>((x - offsetX) / scale);
+    const int canvasY = static_cast<int>((y - offsetY) / scale);
+
     if (currentState == AppState::HOME) {
-        // Ask HomeView which card was clicked based on (x, y) coordinates
-        HomeAction action = homeView.handleMouseClicked(x, y);
+        // Ask HomeView which card was clicked in the fixed application canvas.
+        HomeAction action = homeView.handleMouseClicked(canvasX, canvasY);
 
         if (action == HomeAction::PLAY_VIEW) {
             currentState = AppState::QUAD_VIEW;
@@ -118,7 +148,7 @@ void ofApp::mousePressed(int x, int y, int button) {
     } 
     else if (currentState == AppState::QUAD_VIEW) {
         // Click on any of the 4 quadrants to zoom directly into that filter
-        int quadIndex = quadView.handleMouseClicked(x, y);
+        int quadIndex = quadView.handleMouseClicked(canvasX, canvasY);
         if (quadIndex == 1) { 
             modeView.setFilter(&retroFilter, "1950s Retro Mode"); 
             currentState = AppState::MODE_VIEW; 
