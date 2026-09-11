@@ -37,6 +37,12 @@ private:
     HolidayFilter holidayFilter;
     PartyFilter partyFilter;
 
+    // Manual Filter keyboard state
+    float manualBrightness = 0.0f;
+    float manualContrast = 1.0f;
+    float manualSharpness = 0.0f;
+    bool manualInvert = false;
+
     // cv::Mat: OpenCV CPU memory buffer where pixels and UI are drawn
     cv::Mat frameBuffer;
 

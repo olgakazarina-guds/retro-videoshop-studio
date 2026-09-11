@@ -1,4 +1,11 @@
 #include "ofApp.h"
+#include <algorithm>
+#include <cmath>
+
+namespace {
+constexpr int kCanvasWidth = 1280;
+constexpr int kCanvasHeight = 720;
+}
 
 // ==============================================================================
 // SETUP: Called once when the application starts
@@ -15,26 +22,27 @@ void ofApp::setup() {
     // 3. Start on the Home dashboard
     currentState = AppState::HOME;
 
-    // 4. Create an empty black 1280x720 canvas in OpenCV (8-bit, 3 color channels: BGR)
+    // 4. Start the manual studio with neutral filter values
+    studioView.getFilter().reset();
+
+    // 5. Create an empty black 1280x720 canvas in OpenCV (8-bit, 3 color channels: BGR)
     frameBuffer = cv::Mat::zeros(720, 1280, CV_8UC3);
 
-    // 5. Pre-allocate openFrameworks GPU texture memory to prevent lag during drawing
+    // 6. Pre-allocate openFrameworks GPU texture memory to prevent lag during drawing
     displayImage.allocate(1280, 720, OF_IMAGE_COLOR);
 
-    // 6. Load default test media (falls back to a vintage color-bar pattern if missing)
-    // mediaManager.loadImage("Test.jpg");
+    // 7. Load default test media (falls back to a vintage color-bar pattern if missing)
+    mediaManager.loadImage("Test.jpg");
 }
 
 // ==============================================================================
 // UPDATE: Called continuously to calculate logic and process video frames
 // ==============================================================================
 void ofApp::update() {
-	ofScopedLock lock(mutex); // Ensure thread-safe access to frameBuffer
+    // Advance video playback before rendering the current frame.
+    mediaManager.update();
 
-	// 1. Update the media manager to fetch the latest video frame if a video is playing
-	mediaManager.update();
-	
-	// Get the current video or photo frame from our media manager
+    // Get the current video or photo frame from our media manager
     cv::Mat currentFrame = mediaManager.getCurrentFrame();
 
     // Delegate rendering to whichever screen is currently active
@@ -65,7 +73,6 @@ void ofApp::update() {
 // DRAW: Sends the finished OpenCV frameBuffer to the screen via openFrameworks
 // ==============================================================================
 void ofApp::draw() {
-	ofScopedLock lock(mutex); // Ensure thread-safe access to frameBuffer
     // 1. Reset color tint to pure white so the image displays at full brightness
     ofSetColor(255, 255, 255, 255);
 
@@ -76,14 +83,8 @@ void ofApp::draw() {
         cv::Mat displayMat;
         cv::cvtColor(frameBuffer, displayMat, cv::COLOR_BGR2RGB);
 
-		// Force a continuous clone to strip any Open CV row-padding bytes
-		// to prevent a crash when copying to openFrameworks ofImage
-		cv::Mat continuousMat = displayMat.clone();
-
-		// Safely allocate or match displayImage dimensions if they ever change
-		if (!displayImage.isAllocated() || displayImage.getWidth() != continuousMat.cols || displayImage.getHeight() != continuousMat.rows) {
-			displayImage.allocate(continuousMat.cols, continuousMat.rows, OF_IMAGE_COLOR);
-		}
+        // Keep the upload buffer contiguous for safe OpenFrameworks texture updates.
+        cv::Mat continuousMat = displayMat.clone();
 
         // 3. Copy CPU pixels into openFrameworks ofImage
         displayImage.setFromPixels(continuousMat.data, continuousMat.cols, continuousMat.rows, OF_IMAGE_COLOR);
@@ -92,8 +93,20 @@ void ofApp::draw() {
         // Without this line, the screen remains blank gray!
         displayImage.update();
 
-        // 5. Render the texture across the entire window
-        displayImage.draw(0, 0, ofGetWidth(), ofGetHeight());
+        // Preserve the 16:9 canvas aspect ratio in resized or portrait windows.
+        // The UI remains a landscape canvas with letterboxing rather than being
+        // stretched or rotated into an unusable coordinate system.
+        const float scale = std::min(static_cast<float>(ofGetWidth()) / kCanvasWidth,
+                                     static_cast<float>(ofGetHeight()) / kCanvasHeight);
+        const float drawWidth = kCanvasWidth * scale;
+        const float drawHeight = kCanvasHeight * scale;
+        const float offsetX = (ofGetWidth() - drawWidth) * 0.5f;
+        const float offsetY = (ofGetHeight() - drawHeight) * 0.5f;
+
+        ofSetColor(0, 0, 0, 255);
+        ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+        ofSetColor(255, 255, 255, 255);
+        displayImage.draw(offsetX, offsetY, drawWidth, drawHeight);
     }
 }
 
@@ -101,9 +114,21 @@ void ofApp::draw() {
 // MOUSE PRESSED: Handles clicks for navigating between screens
 // ==============================================================================
 void ofApp::mousePressed(int x, int y, int button) {
+    const float scale = std::min(static_cast<float>(ofGetWidth()) / kCanvasWidth,
+                                 static_cast<float>(ofGetHeight()) / kCanvasHeight);
+    const float offsetX = (ofGetWidth() - kCanvasWidth * scale) * 0.5f;
+    const float offsetY = (ofGetHeight() - kCanvasHeight * scale) * 0.5f;
+    if (scale <= 0.0f || x < offsetX || y < offsetY ||
+        x >= offsetX + kCanvasWidth * scale || y >= offsetY + kCanvasHeight * scale) {
+        return;
+    }
+
+    const int canvasX = static_cast<int>((x - offsetX) / scale);
+    const int canvasY = static_cast<int>((y - offsetY) / scale);
+
     if (currentState == AppState::HOME) {
-        // Ask HomeView which card was clicked based on (x, y) coordinates
-        HomeAction action = homeView.handleMouseClicked(x, y);
+        // Ask HomeView which card was clicked in the fixed application canvas.
+        HomeAction action = homeView.handleMouseClicked(canvasX, canvasY);
 
         if (action == HomeAction::PLAY_VIEW) {
             currentState = AppState::QUAD_VIEW;
@@ -123,7 +148,7 @@ void ofApp::mousePressed(int x, int y, int button) {
     } 
     else if (currentState == AppState::QUAD_VIEW) {
         // Click on any of the 4 quadrants to zoom directly into that filter
-        int quadIndex = quadView.handleMouseClicked(x, y);
+        int quadIndex = quadView.handleMouseClicked(canvasX, canvasY);
         if (quadIndex == 1) { 
             modeView.setFilter(&retroFilter, "1950s Retro Mode"); 
             currentState = AppState::MODE_VIEW; 
@@ -152,6 +177,38 @@ void ofApp::keyPressed(int key) {
         }
         if (key == '-' || key == '_') {
             modeView.setIntensity(modeView.getIntensity() - 0.05f);
+        }
+    }
+    else if (currentState == AppState::FILTER_STUDIO) {
+        auto& filter = studioView.getFilter();
+
+        if (key == 'B') {
+            manualBrightness = std::min(100.0f, manualBrightness + 5.0f);
+            filter.setBrightness(manualBrightness);
+        } else if (key == 'b') {
+            manualBrightness = std::max(-100.0f, manualBrightness - 5.0f);
+            filter.setBrightness(manualBrightness);
+        } else if (key == 'C') {
+            manualContrast = std::min(3.0f, manualContrast + 0.1f);
+            filter.setContrast(manualContrast);
+        } else if (key == 'c') {
+            manualContrast = std::max(0.1f, manualContrast - 0.1f);
+            filter.setContrast(manualContrast);
+        } else if (key == 'S') {
+            manualSharpness = std::min(5.0f, manualSharpness + 0.1f);
+            filter.setSharpness(manualSharpness);
+        } else if (key == 's') {
+            manualSharpness = std::max(0.0f, manualSharpness - 0.1f);
+            filter.setSharpness(manualSharpness);
+        } else if (key == 'I' || key == 'i') {
+            manualInvert = !manualInvert;
+            filter.setInvert(manualInvert);
+        } else if (key == 'R' || key == 'r') {
+            manualBrightness = 0.0f;
+            manualContrast = 1.0f;
+            manualSharpness = 0.0f;
+            manualInvert = false;
+            filter.reset();
         }
     }
 }

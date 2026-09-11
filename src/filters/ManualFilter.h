@@ -27,6 +27,11 @@ public:
     void setSharpness(float val);
     void setInvert(bool val);
 
+    float getBrightness() const { return brightness; }
+    float getContrast() const { return contrast; }
+    float getSharpness() const { return sharpness; }
+    bool isInverted() const { return invertColors; }
+
     // Helper method to reset all adjustments back to default
     void reset();
 };

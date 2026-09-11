@@ -13,12 +13,10 @@ bool MediaSourceManager::openFileDialog() {
         std::string ext = ofToLower(ofFilePath::getFileExt(filePath));
         
         if (ext == "jpg" || ext == "jpeg" || ext == "png") {
-            loadImage(filePath);
-			return true;
+            return loadImage(filePath);
         } 
         else if (ext == "mp4" || ext == "mov" || ext == "avi" || ext == "mkv") {
-            loadVideo(filePath);
-			return true;
+            return loadVideo(filePath);
         } 
         else {
             ofLogWarning("MediaSourceManager") << "Unsupported file format: " << ext;
@@ -27,11 +25,12 @@ bool MediaSourceManager::openFileDialog() {
 	return false; // user canceled or invalid format
 }
 
-void MediaSourceManager::loadImage(const std::string& path) {
+bool MediaSourceManager::loadImage(const std::string& path) {
 	// Close any previously loaded video to free resources
 	if (videoPlayer.isLoaded()) {
 		videoPlayer.close();
-}
+	}
+	webcam.close();
 
     ofImage img;
     // 1. Attempt to load the file from the bin/data folder
@@ -49,6 +48,7 @@ void MediaSourceManager::loadImage(const std::string& path) {
             cv::cvtColor(temp, currentFrame, cv::COLOR_RGB2BGR);
         }
 		activeSource = IMAGE;
+		return true;
 	}
 
     else {
@@ -57,16 +57,43 @@ void MediaSourceManager::loadImage(const std::string& path) {
         ofLogNotice("MediaSourceManager") << "File not found: " << path << ". Generating vintage color-bar test pattern.";
 		generateSMPTPattern();
 		activeSource = NONE;
+		return false;
 	}
 }
 
-void MediaSourceManager::loadVideo(const std::string& path) {
+bool MediaSourceManager::loadVideo(const std::string& path) {
+    webcam.close();
+    if (videoPlayer.isLoaded()) {
+        videoPlayer.close();
+    }
     if (videoPlayer.load(path)) {
+        videoPlayer.setLoopState(OF_LOOP_NORMAL);
         videoPlayer.play();
         activeSource = VIDEO;
-    } else {
-        ofLogNotice("MediaSourceManager") << "Konnte Video nicht laden: " << path;
+        return true;
     }
+
+    ofLogWarning("MediaSourceManager") << "Could not load video: " << path;
+    generateSMPTPattern();
+    activeSource = NONE;
+    return false;
+}
+
+bool MediaSourceManager::openWebcam(int deviceID) {
+    if (videoPlayer.isLoaded()) {
+        videoPlayer.close();
+    }
+    webcam.close();
+    webcam.setDeviceID(deviceID);
+    if (webcam.setup(1280, 720)) {
+        activeSource = WEBCAM;
+        return true;
+    }
+
+    ofLogWarning("MediaSourceManager") << "Webcam unavailable; using test pattern.";
+    generateSMPTPattern();
+    activeSource = NONE;
+    return false;
 }
 
 void MediaSourceManager::update() {
@@ -77,7 +104,14 @@ void MediaSourceManager::update() {
             cv::Mat temp(static_cast<int>(pixels.getHeight()), static_cast<int>(pixels.getWidth()), CV_8UC3, reinterpret_cast<void*>(pixels.getData()));
             cv::cvtColor(temp, currentFrame, cv::COLOR_RGB2BGR);
         }
-    } 
+    } else if (activeSource == WEBCAM) {
+        webcam.update();
+        if (webcam.isFrameNew()) {
+            ofPixels& pixels = webcam.getPixels();
+            cv::Mat temp(static_cast<int>(pixels.getHeight()), static_cast<int>(pixels.getWidth()), CV_8UC3, pixels.getData());
+            cv::cvtColor(temp, currentFrame, cv::COLOR_RGB2BGR);
+        }
+    }
 }
 
 cv::Mat MediaSourceManager::getCurrentFrame() {
