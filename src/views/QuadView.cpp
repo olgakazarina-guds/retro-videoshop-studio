@@ -6,8 +6,9 @@ QuadView::QuadView() {
     // Leave a camera-style top rail and a narrow lower rail around the matrix.
     quad0 = cv::Rect(28, 72, 612, 320); // Quadrant 0: Top-Left
     quad1 = cv::Rect(640, 72, 612, 320); // Quadrant 1: Top-Right
-    quad2 = cv::Rect(28, 400, 612, 292); // Quadrant 2: Bottom-Left
-    quad3 = cv::Rect(640, 400, 612, 292); // Quadrant 3: Bottom-Right
+    // Leave a lower camera rail for the shared rotation controls.
+    quad2 = cv::Rect(28, 400, 612, 270); // Quadrant 2: Bottom-Left
+    quad3 = cv::Rect(640, 400, 612, 270); // Quadrant 3: Bottom-Right
 }
 
 void QuadView::draw(cv::Mat& canvas, const cv::Mat& currentFrame) {
