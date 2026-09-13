@@ -1,5 +1,6 @@
 #include "FilterStudioView.h"
 #include "CameraChrome.h"
+#include "MediaFrameLayout.h"
 #include <cstdio>
 
 void FilterStudioView::draw(cv::Mat& canvas, const cv::Mat& currentFrame) {
@@ -8,8 +9,7 @@ void FilterStudioView::draw(cv::Mat& canvas, const cv::Mat& currentFrame) {
     // Process current frame through the manual sandbox filter
     cv::Mat processed = manualFilter.process(currentFrame, 1.0f);
     cv::Rect previewRect(60, 60, 800, 560);
-    cv::Mat resized;
-    cv::resize(processed, resized, previewRect.size());
+    cv::Mat resized = cropToAspectAndResize(processed, previewRect.size());
 
     canvas = cv::Scalar(16, 16, 18);
     resized.copyTo(canvas(previewRect));
