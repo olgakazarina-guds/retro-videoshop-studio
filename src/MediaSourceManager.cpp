@@ -2,7 +2,7 @@
 
 MediaSourceManager::MediaSourceManager() {
         currentFrame = cv::Mat::zeros(720, 1280, CV_8UC3);
-		generateSMPTPattern();
+		loadPlaceholder();
 		}
 
 bool MediaSourceManager::openFileDialog() {
@@ -56,10 +56,9 @@ bool MediaSourceManager::loadImage(const std::string& path) {
 	}
 
     else {
-        // 2. Fallback: If Test.jpg is not found in bin/data, generate a classic SMPTE broadcast test pattern
-        // This ensures the application never starts with a blank gray window!
-        ofLogNotice("MediaSourceManager") << "File not found: " << path << ". Generating vintage color-bar test pattern.";
-		generateSMPTPattern();
+        // Show the branded placeholder when the requested image cannot be loaded.
+        ofLogNotice("MediaSourceManager") << "File not found: " << path << ". Showing the Retro Videoshop placeholder.";
+		loadPlaceholder();
 		activeSource = NONE;
 		return false;
 	}
@@ -78,7 +77,7 @@ bool MediaSourceManager::loadVideo(const std::string& path) {
     }
 
     ofLogWarning("MediaSourceManager") << "Could not load video: " << path;
-    generateSMPTPattern();
+    loadPlaceholder();
     activeSource = NONE;
     return false;
 }
@@ -94,8 +93,8 @@ bool MediaSourceManager::openWebcam(int deviceID) {
         return true;
     }
 
-    ofLogWarning("MediaSourceManager") << "Webcam unavailable; using test pattern.";
-    generateSMPTPattern();
+    ofLogWarning("MediaSourceManager") << "Webcam unavailable; showing the Retro Videoshop placeholder.";
+    loadPlaceholder();
     activeSource = NONE;
     return false;
 }
@@ -159,7 +158,24 @@ cv::Mat MediaSourceManager::getCurrentFrame() {
     return currentFrame;
 }
 
-// Standalone helper method to generate a classic SMPTE broadcast test pattern
+// Load the bundled image used whenever there is no usable media source.
+void MediaSourceManager::loadPlaceholder() {
+    ofImage placeholder;
+    if (placeholder.load("retro-videoshop-placeholder.jpeg")) {
+        ofPixels& pixels = placeholder.getPixels();
+        cv::Mat temp(static_cast<int>(pixels.getHeight()), static_cast<int>(pixels.getWidth()),
+                     CV_8UC3, pixels.getData());
+        cv::cvtColor(temp, currentFrame, cv::COLOR_RGB2BGR);
+        applyRotation();
+        return;
+    }
+
+    // Keep a visible fallback if the bundled asset is missing from bin/data.
+    ofLogError("MediaSourceManager") << "Could not load retro-videoshop-placeholder.jpeg.";
+    generateSMPTPattern();
+}
+
+// Final safety fallback if the bundled placeholder image is unavailable.
 void MediaSourceManager::generateSMPTPattern() {
 		currentFrame = cv::Mat::zeros(720, 1280, CV_8UC3);
 	

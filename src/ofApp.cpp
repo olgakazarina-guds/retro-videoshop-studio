@@ -32,8 +32,7 @@ void ofApp::setup() {
     // 6. Pre-allocate openFrameworks GPU texture memory to prevent lag during drawing
     displayImage.allocate(1280, 720, OF_IMAGE_COLOR);
 
-    // 7. Load default test media (falls back to a vintage color-bar pattern if missing)
-    mediaManager.loadImage("Test.jpg");
+    // 7. MediaSourceManager starts with the branded placeholder until media is selected.
 }
 
 // ==============================================================================
