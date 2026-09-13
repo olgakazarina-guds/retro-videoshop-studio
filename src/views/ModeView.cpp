@@ -1,5 +1,6 @@
 #include "ModeView.h"
 #include "CameraChrome.h"
+#include "MediaFrameLayout.h"
 #include <algorithm>
 
 ModeView::ModeView() : currentFilter(nullptr), intensity(0.75f), modeName("Default Mode") {}
@@ -28,8 +29,7 @@ void ModeView::draw(cv::Mat& canvas, const cv::Mat& currentFrame) {
 
     // Centered 35mm film view area
     cv::Rect filmRect(140, 60, 1000, 562);
-    cv::Mat resized;
-    cv::resize(filtered, resized, filmRect.size());
+    cv::Mat resized = cropToAspectAndResize(filtered, filmRect.size());
     resized.copyTo(canvas(filmRect));
 
     // Outer 35mm border

@@ -1,4 +1,5 @@
 #include "HomeView.h"
+#include "MediaFrameLayout.h"
 #include <ctime> // C++ standard library for real-time system clock
 
 // ==============================================================================
@@ -60,9 +61,8 @@ void HomeView::draw(cv::Mat& canvas, const cv::Mat& previewFrame) {
     // 5. Render Centered Live Video Frame
     // -------------------------------------------------------------------------
     if (!previewFrame.empty()) {
-        cv::Mat resizedPreview;
-        // Scale input frame to fit the 800x360 monitor rectangle
-        cv::resize(previewFrame, resizedPreview, screenRect.size());
+        // Crop to the monitor shape before resizing so media is not stretched.
+        cv::Mat resizedPreview = cropToAspectAndResize(previewFrame, screenRect.size());
         resizedPreview.copyTo(canvas(screenRect));
     } else {
         // Fallback dark screen if feed is loading
