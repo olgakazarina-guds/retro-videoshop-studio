@@ -126,25 +126,40 @@ void HomeView::draw(cv::Mat& canvas, const cv::Mat& previewFrame) {
                    cv::FONT_HERSHEY_PLAIN, 1.15, accentColor, 1);
     };
 
-    // Draw the 4 interactive cards with clean line breaks
+    // Draw the unchanged dashboard cards with clean line breaks.
     drawCard(btnPlayView,     "1. Play View",     "2x2 Quad Matrix",          "Live 4-way stream",      cv::Scalar(0, 200, 255));
-    drawCard(btnSelectMode,   "2. Select Mode",   "Retro / Holiday / Party",  "Intensity Scale Studio", cv::Scalar(60, 60, 240));
     drawCard(btnUploadStream, "3. Upload/Stream", "Load Image or Video",      "Webcam Configuration",   cv::Scalar(240, 200, 0));
     drawCard(btnManualFilter, "4. Manual Filter", "Filter-All Sandbox",       "Raw DSP Sliders",        cv::Scalar(100, 220, 100));
 
+    // Card 2 uses the same title, subtitle, and action styling as the other
+    // cards, but its content changes to a dropdown while it is open.
+    const cv::Scalar selectAccent(60, 60, 240);
+    cv::rectangle(canvas, btnSelectMode, cv::Scalar(30, 30, 36), -1);
+    cv::rectangle(canvas, btnSelectMode, selectAccent, 2);
+    cv::putText(canvas, "2. Select Mode", cv::Point(btnSelectMode.x + 16, btnSelectMode.y + 36),
+                cv::FONT_HERSHEY_SIMPLEX, 0.65, cv::Scalar(245, 245, 245), 2);
+
     if (selectMenuOpen) {
-        // Replace the descriptive text with a small, readable preset picker.
-        cv::putText(canvas, "CHOOSE A PRESET:", cv::Point(361, 518),
-                    cv::FONT_HERSHEY_PLAIN, 1.1, cv::Scalar(220, 220, 225), 1);
+        // Keep the choices inside Card 2 so they do not cover neighboring cards.
+        cv::putText(canvas, "CHOOSE A PRESET:", cv::Point(btnSelectMode.x + 16, btnSelectMode.y + 63),
+                    cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(180, 180, 185), 1);
 
         const std::string labels[] = {"RETRO", "HOLIDAY", "PARTY"};
         for (int i = 0; i < 3; ++i) {
             cv::rectangle(canvas, selectMenuOptions[i], cv::Scalar(42, 42, 48), -1);
-            cv::rectangle(canvas, selectMenuOptions[i], cv::Scalar(100, 100, 110), 1);
+            cv::rectangle(canvas, selectMenuOptions[i], selectAccent, 1);
             cv::putText(canvas, labels[i],
-                        cv::Point(selectMenuOptions[i].x + 10, selectMenuOptions[i].y + 19),
-                        cv::FONT_HERSHEY_PLAIN, 1.15, cv::Scalar(245, 245, 245), 1);
+                        cv::Point(selectMenuOptions[i].x + 16, selectMenuOptions[i].y + 20),
+                        cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(180, 180, 185), 1);
         }
+    } else {
+        // Preserve Card 2's normal appearance when the dropdown is closed.
+        cv::putText(canvas, "Retro / Holiday / Party", cv::Point(btnSelectMode.x + 16, btnSelectMode.y + 75),
+                    cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(180, 180, 185), 1);
+        cv::putText(canvas, "Intensity Scale Studio", cv::Point(btnSelectMode.x + 16, btnSelectMode.y + 105),
+                    cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(180, 180, 185), 1);
+        cv::putText(canvas, "CLICK TO ENTER >", cv::Point(btnSelectMode.x + 16, btnSelectMode.y + 165),
+                    cv::FONT_HERSHEY_PLAIN, 1.15, selectAccent, 1);
     }
 }
 
