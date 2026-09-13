@@ -5,7 +5,7 @@ An interactive C++ and OpenCV-powered creative studio application designed to fu
 ## High-Level Project Goals & Expected Behaviour
 * The application features an intuitive Home Screen Dashboard modeled after a vintage camera aesthetic, providing four primary interactive choices:
 * **Play View:** Opens the signature 2x2 Quad-View matrix displaying the active media feed across four distinct cinematic styles simultaneously (Original, 1950s Retro, Holiday Warmth, and Party Neon). Clicking any quadrant instantly routes the user to that mode's dedicated fine-tuning view.
-* **Select Mode:** Opens a direct pathway to jump straight into a specific mode's fine-tuning view (Retro, Holiday, or Party) equipped with an intuitive intensity scale.
+* **Select Mode:** Opens a compact dropdown inside Card 2 so users can choose Retro, Holiday, or Party before entering that mode's fine-tuning view with an intuitive intensity scale.
 * **Upload/Stream:** Manages media source configuration, allowing on-the-fly switching between static images (cv::imread), pre-recorded video files (cv::VideoCapture), and live webcam feeds (cv::VideoCapture(0)).
 * **Manual Filter:** Opens the Filter-All Studio sandbox, enabling independent raw parameter adjustments (brightness, contrast, inversion, and sharpness).
 

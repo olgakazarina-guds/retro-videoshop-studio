@@ -8,7 +8,9 @@
 enum class HomeAction {
     NONE = 0,
     PLAY_VIEW,       // Card 1: 2x2 Quad Matrix
-    SELECT_MODE,     // Card 2: Presets (Retro, Holiday, Party)
+    RETRO_MODE,      // Select Mode dropdown: Retro preset
+    HOLIDAY_MODE,    // Select Mode dropdown: Holiday preset
+    PARTY_MODE,      // Select Mode dropdown: Party preset
     UPLOAD_STREAM,   // Card 3: Media input switcher
     MANUAL_FILTER    // Card 4: Filter-All manual sandbox
 };
@@ -32,4 +34,6 @@ private:
     cv::Rect btnSelectMode;
     cv::Rect btnUploadStream;
     cv::Rect btnManualFilter;
+    bool selectMenuOpen;
+    cv::Rect selectMenuOptions[3];
 };

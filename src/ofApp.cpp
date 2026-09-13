@@ -175,10 +175,18 @@ void ofApp::mousePressed(int x, int y, int button) {
         if (action == HomeAction::PLAY_VIEW) {
             currentState = AppState::QUAD_VIEW;
         } 
-        else if (action == HomeAction::SELECT_MODE) {
+        else if (action == HomeAction::RETRO_MODE) {
             modeView.setFilter(&retroFilter, "1950s Retro Mode");
             currentState = AppState::MODE_VIEW;
-        } 
+        }
+        else if (action == HomeAction::HOLIDAY_MODE) {
+            modeView.setFilter(&holidayFilter, "Holiday Warmth Mode");
+            currentState = AppState::MODE_VIEW;
+        }
+        else if (action == HomeAction::PARTY_MODE) {
+            modeView.setFilter(&partyFilter, "Party Neon Mode");
+            currentState = AppState::MODE_VIEW;
+        }
         else if (action == HomeAction::UPLOAD_STREAM) {
             if (mediaManager.openFileDialog()) {
                 currentState = AppState::FILTER_STUDIO;
