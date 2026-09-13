@@ -27,6 +27,7 @@ class MediaSourceManager
     SourceType activeSource = NONE;
     int rotationQuarterTurns = 0;
 
-	void generateSMPTPattern(); // helper method to generate SMPTE color bars
+	void loadPlaceholder(); // show the bundled image when no usable media is available
+	void generateSMPTPattern(); // final safety fallback if the placeholder is unavailable
 	void applyRotation();
 };
