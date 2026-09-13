@@ -186,11 +186,16 @@ void ofApp::mousePressed(int x, int y, int button) {
             modeView.setFilter(&partyFilter, "Party Neon Mode");
             currentState = AppState::MODE_VIEW;
         }
-        else if (action == HomeAction::UPLOAD_STREAM) {
+        else if (action == HomeAction::UPLOAD_FILE) {
             if (mediaManager.openFileDialog()) {
                 currentState = AppState::FILTER_STUDIO;
             }
-        } 
+        }
+        else if (action == HomeAction::WEBCAM_STREAM) {
+			if (mediaManager.openWebcam(0)) {
+				currentState = AppState::FILTER_STUDIO;
+			}
+        }
         else if (action == HomeAction::MANUAL_FILTER) {
             currentState = AppState::FILTER_STUDIO;
         }

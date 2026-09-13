@@ -16,6 +16,10 @@ HomeView::HomeView() : frameCounter(0) {
     selectMenuOptions[0] = cv::Rect(361, 520, 233, 36);
     selectMenuOptions[1] = cv::Rect(361, 565, 233, 36);
     selectMenuOptions[2] = cv::Rect(361, 610, 233, 36);
+
+	// The two choices fit inside Card 3
+	uploadStreamOptions[0] = cv::Rect(666, 520, 233, 36); // Load File
+	uploadStreamOptions[1] = cv::Rect(666, 565, 233, 36); // Webcam Stream
 }
 
 // ==============================================================================
@@ -147,6 +151,22 @@ void HomeView::draw(cv::Mat& canvas, const cv::Mat& previewFrame) {
                     cv::Point(selectMenuOptions[i].x + 16, selectMenuOptions[i].y + 24),
                     cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(180, 180, 185), 1);
     }
+
+	// Card 3: Upload/Stream with split clickable options
+    const cv::Scalar uploadAccent(240, 200, 0);
+    cv::rectangle(canvas, btnUploadStream, cv::Scalar(30, 30, 36), -1);
+    cv::rectangle(canvas, btnUploadStream, uploadAccent, 2);
+    cv::putText(canvas, "3. Upload/Stream", cv::Point(btnUploadStream.x + 16, btnUploadStream.y + 36),
+                cv::FONT_HERSHEY_SIMPLEX, 0.65, cv::Scalar(245, 245, 245), 2);
+
+    const std::string uploadLabels[] = {"Load File", "Open Webcam"};
+    for (int i = 0; i < 2; ++i) {
+        cv::rectangle(canvas, uploadStreamOptions[i], cv::Scalar(42, 42, 48), -1);
+        cv::rectangle(canvas, uploadStreamOptions[i], uploadAccent, 1);
+        cv::putText(canvas, uploadLabels[i],
+                    cv::Point(uploadStreamOptions[i].x + 16, uploadStreamOptions[i].y + 24),
+                    cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(180, 180, 185), 1);
+    }
 }
 
 // ==============================================================================
@@ -159,7 +179,8 @@ HomeAction HomeView::handleMouseClicked(int x, int y) {
     if (selectMenuOptions[0].contains(pt)) return HomeAction::RETRO_MODE;
     if (selectMenuOptions[1].contains(pt)) return HomeAction::HOLIDAY_MODE;
     if (selectMenuOptions[2].contains(pt)) return HomeAction::PARTY_MODE;
-    if (btnUploadStream.contains(pt)) return HomeAction::UPLOAD_STREAM;
+    if (uploadStreamOptions[0].contains(pt)) return HomeAction::UPLOAD_FILE;
+    if (uploadStreamOptions[1].contains(pt)) return HomeAction::WEBCAM_STREAM;
     if (btnManualFilter.contains(pt)) return HomeAction::MANUAL_FILTER;
     return HomeAction::NONE;
 }
