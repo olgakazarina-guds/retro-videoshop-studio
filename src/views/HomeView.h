@@ -34,6 +34,5 @@ private:
     cv::Rect btnSelectMode;
     cv::Rect btnUploadStream;
     cv::Rect btnManualFilter;
-    bool selectMenuOpen;
     cv::Rect selectMenuOptions[3];
 };

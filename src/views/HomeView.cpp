@@ -4,17 +4,17 @@
 // ==============================================================================
 // Constructor: Calculate coordinates for the 4 bottom cards on 1280x720 canvas
 // ==============================================================================
-HomeView::HomeView() : frameCounter(0), selectMenuOpen(false) {
+HomeView::HomeView() : frameCounter(0) {
     // 4 cards spaced evenly with 40px left margin and 40px gaps
     btnPlayView     = cv::Rect(40,  460, 265, 200);
     btnSelectMode   = cv::Rect(345, 460, 265, 200);
     btnUploadStream = cv::Rect(650, 460, 265, 200);
     btnManualFilter = cv::Rect(955, 460, 265, 200);
 
-    // The three choices fit inside Card 2, so the menu never covers the preview.
-    selectMenuOptions[0] = cv::Rect(361, 530, 233, 27);
-    selectMenuOptions[1] = cv::Rect(361, 560, 233, 27);
-    selectMenuOptions[2] = cv::Rect(361, 590, 233, 27);
+    // The three choices fit below the header and inside Card 2.
+    selectMenuOptions[0] = cv::Rect(361, 520, 233, 36);
+    selectMenuOptions[1] = cv::Rect(361, 565, 233, 36);
+    selectMenuOptions[2] = cv::Rect(361, 610, 233, 36);
 }
 
 // ==============================================================================
@@ -126,25 +126,26 @@ void HomeView::draw(cv::Mat& canvas, const cv::Mat& previewFrame) {
                    cv::FONT_HERSHEY_PLAIN, 1.15, accentColor, 1);
     };
 
-    // Draw the 4 interactive cards with clean line breaks
+    // Draw the unchanged dashboard cards with clean line breaks.
     drawCard(btnPlayView,     "1. Play View",     "2x2 Quad Matrix",          "Live 4-way stream",      cv::Scalar(0, 200, 255));
-    drawCard(btnSelectMode,   "2. Select Mode",   "Retro / Holiday / Party",  "Intensity Scale Studio", cv::Scalar(60, 60, 240));
     drawCard(btnUploadStream, "3. Upload/Stream", "Load Image or Video",      "Webcam Configuration",   cv::Scalar(240, 200, 0));
     drawCard(btnManualFilter, "4. Manual Filter", "Filter-All Sandbox",       "Raw DSP Sliders",        cv::Scalar(100, 220, 100));
 
-    if (selectMenuOpen) {
-        // Replace the descriptive text with a small, readable preset picker.
-        cv::putText(canvas, "CHOOSE A PRESET:", cv::Point(361, 518),
-                    cv::FONT_HERSHEY_PLAIN, 1.1, cv::Scalar(220, 220, 225), 1);
+    // Card 2 keeps the same title and card styling as the other cards.
+    const cv::Scalar selectAccent(60, 60, 240);
+    cv::rectangle(canvas, btnSelectMode, cv::Scalar(30, 30, 36), -1);
+    cv::rectangle(canvas, btnSelectMode, selectAccent, 2);
+    cv::putText(canvas, "2. Select Mode", cv::Point(btnSelectMode.x + 16, btnSelectMode.y + 36),
+                cv::FONT_HERSHEY_SIMPLEX, 0.65, cv::Scalar(245, 245, 245), 2);
 
-        const std::string labels[] = {"RETRO", "HOLIDAY", "PARTY"};
-        for (int i = 0; i < 3; ++i) {
-            cv::rectangle(canvas, selectMenuOptions[i], cv::Scalar(42, 42, 48), -1);
-            cv::rectangle(canvas, selectMenuOptions[i], cv::Scalar(100, 100, 110), 1);
-            cv::putText(canvas, labels[i],
-                        cv::Point(selectMenuOptions[i].x + 10, selectMenuOptions[i].y + 19),
-                        cv::FONT_HERSHEY_PLAIN, 1.15, cv::Scalar(245, 245, 245), 1);
-        }
+    // The preset rows are always visible and directly clickable.
+    const std::string labels[] = {"RETRO", "HOLIDAY", "PARTY"};
+    for (int i = 0; i < 3; ++i) {
+        cv::rectangle(canvas, selectMenuOptions[i], cv::Scalar(42, 42, 48), -1);
+        cv::rectangle(canvas, selectMenuOptions[i], selectAccent, 1);
+        cv::putText(canvas, labels[i],
+                    cv::Point(selectMenuOptions[i].x + 16, selectMenuOptions[i].y + 24),
+                    cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(180, 180, 185), 1);
     }
 }
 
@@ -154,30 +155,10 @@ void HomeView::draw(cv::Mat& canvas, const cv::Mat& previewFrame) {
 HomeAction HomeView::handleMouseClicked(int x, int y) {
     cv::Point pt(x, y);
 
-    if (selectMenuOpen) {
-        if (selectMenuOptions[0].contains(pt)) {
-            selectMenuOpen = false;
-            return HomeAction::RETRO_MODE;
-        }
-        if (selectMenuOptions[1].contains(pt)) {
-            selectMenuOpen = false;
-            return HomeAction::HOLIDAY_MODE;
-        }
-        if (selectMenuOptions[2].contains(pt)) {
-            selectMenuOpen = false;
-            return HomeAction::PARTY_MODE;
-        }
-
-        // Clicking elsewhere closes the menu without changing screens.
-        selectMenuOpen = false;
-        return HomeAction::NONE;
-    }
-
     if (btnPlayView.contains(pt))     return HomeAction::PLAY_VIEW;
-    if (btnSelectMode.contains(pt)) {
-        selectMenuOpen = true;
-        return HomeAction::NONE;
-    }
+    if (selectMenuOptions[0].contains(pt)) return HomeAction::RETRO_MODE;
+    if (selectMenuOptions[1].contains(pt)) return HomeAction::HOLIDAY_MODE;
+    if (selectMenuOptions[2].contains(pt)) return HomeAction::PARTY_MODE;
     if (btnUploadStream.contains(pt)) return HomeAction::UPLOAD_STREAM;
     if (btnManualFilter.contains(pt)) return HomeAction::MANUAL_FILTER;
     return HomeAction::NONE;
