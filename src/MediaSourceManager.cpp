@@ -86,17 +86,84 @@ bool MediaSourceManager::openWebcam(int deviceID) {
     if (videoPlayer.isLoaded()) {
         videoPlayer.close();
     }
+
+#if defined(TARGET_WIN32)
+//Windows implementation using openCV to bypass videoInput crashes
+if (webcamCapture.isOpened()) {
+	webcamCapture.release();
+}
+
+//Safely test indices 0 through 3 to find a responsive camera
+bool opened = false;
+int workingID = deviceID;
+
+for (int i = 0; i < 4; ++i) {
+	int testID = (deviceID + i) % 4; // Wrap around to test indices 0-3
+	if (webcamCapture.open(testID, cv::CAP_DSHOW)) {
+		workingID = testID;
+		opened = true;
+		break;
+	}
+}
+
+if (opened) {
+	activeSource = WEBCAM;
+	std::cout << "[MediaSourceManager] Webcam initialized successfully with device ID: " << workingID << std::endl;
+	return true;
+}
+#else
+//macOS / Xcode implementation using ofVideoGrabber
+
     webcam.close();
-    webcam.setDeviceID(deviceID);
+
+	//Query connected video devices to verify availability
+	std::vector<ofVideoDevice> devices = webcam.listDevices();
+	if (devices.empty()) {
+		ofLogWarning("MediaSourceManager") << "No webcam devices found; showing the Retro Videoshop placeholder.";
+		loadPlaceholder();
+		activeSource = NONE;
+		return false;
+	}
+
+	//Check if the requested device ID is valid and available
+	int targetID = deviceID;
+		bool deviceFound = false;
+		for (const auto& dev : devices) {
+			if (dev.id == targetID && dev.bAvailable) {
+				deviceFound = true;
+				break;
+			}
+		}
+
+	//Fall back to the first available device if the requested one is not found
+	if (!deviceFound) {
+		for (const auto& dev : devices) {
+			if (dev.bAvailable) {
+				targetID = dev.id;
+				deviceFound = true;
+				break;
+			}
+		}
+	}
+
+	if (!deviceFound) {
+			ofLogWarning("MediaSourceManager") << "Requested webcam device not found; showing the Retro Videoshop placeholder.";
+			loadPlaceholder();
+			activeSource = NONE;
+			return false;
+		}
+
+	webcam.setDeviceID(targetID);
     if (webcam.setup(1280, 720)) {
         activeSource = WEBCAM;
+		ofLogNotice("MediaSourceManager") << "Webcam initialized successfully with device ID: " << targetID;
         return true;
     }
-
-    ofLogWarning("MediaSourceManager") << "Webcam unavailable; showing the Retro Videoshop placeholder.";
+	ofLogWarning("MediaSourceManager") << "Webcam unavailable; showing the Retro Videoshop placeholder.";
     loadPlaceholder();
     activeSource = NONE;
     return false;
+#endif
 }
 
 void MediaSourceManager::rotateLeft() {
@@ -111,6 +178,7 @@ void MediaSourceManager::rotateRight() {
 }
 
 void MediaSourceManager::applyRotation() {
+	ofScopedLock lock(mutex); // Ensure thread safety when accessing currentFrame
     if (currentFrame.empty() || rotationQuarterTurns == 0) {
         return;
     }
@@ -144,6 +212,17 @@ void MediaSourceManager::update() {
             applyRotation();
         }
     } else if (activeSource == WEBCAM) {
+#if defined(TARGET_WIN32)
+		cv::Mat frame;
+		if (webcamCapture.read(frame) && !frame.empty()) {
+			{
+				ofScopedLock lock(mutex);
+				currentFrame = frame.clone();
+			}
+			applyRotation();
+		}
+
+#else
         webcam.update();
         if (webcam.isFrameNew()) {
             ofPixels& pixels = webcam.getPixels();
@@ -151,10 +230,12 @@ void MediaSourceManager::update() {
             cv::cvtColor(temp, currentFrame, cv::COLOR_RGB2BGR);
             applyRotation();
         }
+#endif
     }
 }
 
 cv::Mat MediaSourceManager::getCurrentFrame() {
+    ofScopedLock lock(mutex);
     return currentFrame;
 }
 

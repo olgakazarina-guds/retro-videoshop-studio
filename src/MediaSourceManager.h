@@ -16,11 +16,13 @@ class MediaSourceManager
 		cv::Mat getCurrentFrame();
 
 	private:
+		ofMutex mutex; // Mutex for thread safety
 		cv::Mat currentFrame;
 
 		// Source objects
     ofVideoPlayer videoPlayer;
-    ofVideoGrabber webcam;
+	ofVideoGrabber webcam;	// used for macOS / Xcode implementation
+	cv::VideoCapture webcamCapture; // used for Windows implementation
     
 	// Status to check which source is active
     enum SourceType { NONE, IMAGE, VIDEO, WEBCAM};

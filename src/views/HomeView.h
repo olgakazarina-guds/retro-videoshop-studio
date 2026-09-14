@@ -11,7 +11,8 @@ enum class HomeAction {
     RETRO_MODE,      // Select Mode dropdown: Retro preset
     HOLIDAY_MODE,    // Select Mode dropdown: Holiday preset
     PARTY_MODE,      // Select Mode dropdown: Party preset
-    UPLOAD_STREAM,   // Card 3: Media input switcher
+    UPLOAD_FILE,	 // Card 3 option 1: Load Image or Video file
+	WEBCAM_STREAM,   // Card 3 option 2: Open Webcam
     MANUAL_FILTER    // Card 4: Filter-All manual sandbox
 };
 
@@ -35,4 +36,5 @@ private:
     cv::Rect btnUploadStream;
     cv::Rect btnManualFilter;
     cv::Rect selectMenuOptions[3];
+	cv::Rect uploadStreamOptions[2];
 };
