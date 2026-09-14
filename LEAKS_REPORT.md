@@ -86,9 +86,7 @@ incorrect and could introduce double-free errors or crashes.
 
 ## Scope and limitation
 
-This result classifies the supplied trace. It does not replace a repeatable
-functional test of every media path. For final presentation evidence, run a
-fresh Instruments session after warming up the application and repeat:
+This result classifies the supplied trace, but it does not replace repeatable functional testing across every media path. For definitive evidence, run a fresh Instruments session after warming up the application and repeat the process:
 
 1. Start with the bundled placeholder.
 2. Switch between image and video sources several times.
@@ -99,17 +97,7 @@ fresh Instruments session after warming up the application and repeat:
 7. Stop recording only after the final cycle and export the Leaks table.
 
 Compare live bytes after each identical cycle. One-time framework startup
-allocations should be distinguished from memory that grows continuously. Keep
-the exported table and a screenshot of the Leaks instrument with the learning
-log.
-
-## Requirement assessment
-
-| Course expectation | Evidence/status |
-| --- | --- |
-| Show that no memory loss was observed | **Met for the supplied trace:** no project-owned leak was reported. Do not claim that every possible execution path is mathematically leak-free. |
-| Explain heap and stack memory | **Met in this report:** stack-based C++ handles/local values manage dynamically allocated image, video, and GPU buffers through RAII. |
-| Verify realistic application behavior | **Repeat recommended:** perform the documented image/video/view/rotation/webcam cycle in a fresh Instruments run and retain the exported result. |
+allocations should be distinguished from memory that grows continuously.
 
 ## Conclusion
 
