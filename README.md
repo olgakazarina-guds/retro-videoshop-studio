@@ -1,83 +1,141 @@
 # Retro Videoshop Studio
 
-An interactive C++ and OpenCV-powered creative studio application designed to function as a digital time machine. The software transforms ordinary video clips, photos, and live camera streams into emotionally loaded memories through the lens of a classic, retro-styled studio interface.
+Retro Videoshop Studio is a C++ and openFrameworks application that uses OpenCV to display images, video files, and webcam input through a vintage videoshop-style interface. The application uses a fixed 1280x720 canvas and starts with a branded placeholder image until the user selects another media source.
 
-Memory/leak profiling results and the repeatable Instruments test procedure are
-documented in [LEAKS_REPORT.md](LEAKS_REPORT.md).
+Memory and leak profiling notes are available in [LEAKS_REPORT.md](LEAKS_REPORT.md).
 
-## High-Level Project Goals & Expected Behaviour
-* The application features an intuitive Home Screen Dashboard modeled after a vintage camera aesthetic, providing four primary interactive choices:
-* **Play View:** Opens the signature 2x2 Quad-View matrix displaying the active media feed across four distinct cinematic styles simultaneously (Original, 1950s Retro, Holiday Warmth, and Party Neon). Clicking any quadrant instantly routes the user to that mode's dedicated fine-tuning view.
-* **Select Mode:** Opens a compact dropdown inside Card 2 so users can choose Retro, Holiday, or Party before entering that mode's fine-tuning view with an intuitive intensity scale.
-* **Upload/Stream:** Manages media source configuration, allowing on-the-fly switching between static images (cv::imread), pre-recorded video files (cv::VideoCapture), and live webcam feeds (cv::VideoCapture(0)).
-* **Manual Filter:** Opens the Filter-All Studio sandbox, enabling independent raw parameter adjustments (brightness, contrast, inversion, and sharpness).
+## How the Application Is Organized
 
-## Special Features & Add-Ons
-* **Film Strip Borders & Overlays:** Thematic visual framing mimicking classic film strips for the mode views.
-* **Vintage Camera Aesthetics & Overlays:** Real-time 2D drawing primitives (cv::putText, cv::rectangle, cv::line) simulating a viewfinder feel with a pulsing red [REC] indicator, retro digital timestamps, and alignment grid lines.
-* **Audio-Reactive Filters:** Real-time microphone input integration dynamically modulating filter parameters (such as neon contrast pulsing or film grain flickering) based on audio volume.
-* **Snapshot & Video Export:** Dedicated UI buttons allowing users to capture frozen image snapshots (cv::imwrite) or record short clips directly from active view frames.
+`ofApp` is the main application coordinator. It owns the media manager, view objects, filter objects, and current screen state.
 
-## Naming & Code Conventions
+During each openFrameworks update cycle, the application:
 
-* **Classes & Structs:** PascalCase (`MediaSourceManager`, `RetroFilter`, `HomeView`)
-* **Functions & Methods:** camelCase starting with action verbs (`getCurrentFrame()`, `processFrame()`, `handleMouseClick()`)
-* **Member Variables:** m_camelCase (`m_intensity`, `m_capture`, `m_activeFilter`)
-* **Constants & Enums:** ALL_CAPS (`FILTER_RETRO`, `MODE_QUAD`)
-* **OpenCV Data:** `cv::Mat` type for all image and video frame representations
-* **Header Files:** Every `.h` file must begin with `#pragma once`
+1. Updates the active media source.
+2. Gets the current frame from `MediaSourceManager`.
+3. Draws the selected view into an OpenCV `cv::Mat` canvas.
+4. Converts the canvas from BGR to RGB.
+5. Uploads the result to an openFrameworks `ofImage` for display.
 
-## Quick Class & Architecture Overview
+The main application states are:
 
-* **MediaSourceManager:** Abstracts input handling, managing static images (`cv::imread`), video files, and live webcam feeds (`cv::VideoCapture`) to deliver a standardized `cv::Mat` frame.
-* **BaseFilter (Abstract Base Class):** Defines the pure virtual `process(const cv::Mat& input, float intensity)` contract for polymorphic execution.
-* **RetroFilter, HolidayFilter, PartyFilter, ManualFilter:** Concrete derived classes executing specific pixel transformations (1950s sepia, color channel shifting, neon contrast, and raw slider adjustments).
-* **HomeView:** Manages the vintage camera dashboard interface and hosts four primary clickable interaction options.
-* **QuadView:** Manages the 2x2 live matrix rendering loop using region-of-interest (ROI) slicing and click-to-mode routing.
-* **ModeView & FilterStudioView:** Dedicated UI environments handling fine-tuning intensity scales and raw parameter sliders framed inside film strip borders.
+- **Home:** Dashboard with the live preview and navigation cards.
+- **Quad View:** Four previews of the same source: original, retro, holiday, and party.
+- **Mode View:** One selected preset filter with an intensity control.
+- **Filter Studio:** Manual controls for brightness, contrast, sharpness, and color inversion.
 
-## Shared Method & Interface Contract
+## Media Input
 
-To maintain clean separation of concerns and prevent Git merge clashes between teammates, these exact function signatures form the core architectural contract:
+`MediaSourceManager` provides the current media frame as an OpenCV `cv::Mat`.
 
-### Filter Core & Pipeline
-* **BaseFilter:** `virtual cv::Mat process(const cv::Mat& input, float intensity) = 0;`
-* **MediaSourceManager:** 
-  * `bool loadMedia(const std::string& path);`
-  * `void update();`
-  * `cv::Mat getCurrentFrame() const;`
+The application supports:
 
-### UI View Stack
-* **HomeView:** 
-  * `void draw();`
-  * `int handleMouseClick(int x, int y) const;`
-* **QuadView:** 
-  * `void draw(const cv::Mat& frame);`
-  * `int handleMouseClick(int x, int y) const;`
-* **ModeView:** 
-  * `void draw(const cv::Mat& frame, float intensity);`
-  * `void setIntensity(float intensity);`
+- **Images:** Loaded with openFrameworks `ofImage::load()`.
+- **Video files:** Played with openFrameworks `ofVideoPlayer`.
+- **Webcam on macOS:** Captured with openFrameworks `ofVideoGrabber`.
+- **Webcam on Windows:** Captured with OpenCV `cv::VideoCapture`, using DirectShow through `cv::CAP_DSHOW` while testing available device IDs.
 
-## Core Features & Add-Ons
+Input pixels are converted from openFrameworks RGB format to OpenCV BGR format for processing.
 
-* **Polymorphic DSP Processing:** Derived filter classes eliminate conditional branching (`if/else` or `switch` statements) inside high-frequency video rendering loops.
-* **2x2 Live Quad-View Matrix:** Displays the active media feed across four distinct cinematic styles simultaneously with interactive click-to-mode routing.
-* **Vintage Camera Viewfinder Aesthetics:** Real-time 2D drawing primitives (`cv::putText`, `cv::rectangle`, `cv::line`) simulating an authentic feel with a pulsing red `[REC]` indicator, orange retro timestamps, and alignment grid lines.
-* **Audio-Reactive Filters:** Microphone input integration that dynamically modulates filter parameters (such as neon contrast pulsing or film grain flickering) based on real-time audio volume and beats.
-* **Snapshot & Video Export:** Dedicated UI buttons allowing users to capture frozen image snapshots (`cv::imwrite`) or short video clips directly from active view frames.
+The media manager also supports rotating the current frame. If a media source cannot be opened, the application displays the bundled placeholder image or generates a simple fallback test pattern.
 
-## Team Collaboration Rules (GitHub Workflow)
-Designed for a 2-person development team (40-hour split allocation) to ensure clean version control and zero code clashes:
+The Home screen's **Upload/Stream** card provides two actions:
 
-**Branching Strategy:**
-* Never commit directly to main.
-* Use feature branches for all development (e.g., feature/media-manager, feature/retro-filter, feature/ui-quadview).
-* Pull Requests & Code Reviews:
-* Open a Pull Request (PR) when a feature is complete.
-* Both teammates must briefly review the PR before merging into main to maintain architectural consistency.
+- **Load File:** Opens a file dialog for an image or video.
+- **Open Webcam:** Attempts to open an available webcam.
 
-**Strict Separation of Concerns:**
-* Teammate A will focus on Core Input & Base Filters while Teammate B will implement UI Views & Preset Filters. The View Orchestration will be done in a joint, sequential manner.
+## Filters
 
-**Baseline Maintenance:**
-* Keep main stable. Always pull the latest changes from main into your feature branch before starting a new coding session.
+`BaseFilter` defines the shared filter interface:
+
+```cpp
+virtual cv::Mat process(const cv::Mat& input, float intensity) = 0;
+```
+
+The project includes four concrete filters.
+
+### RetroFilter
+
+`RetroFilter`:
+
+- Converts the source image to grayscale.
+- Applies a cool blue and denim tint.
+- Adds random horizontal VHS-style lines.
+- Blends the filtered result according to the selected intensity.
+
+### HolidayFilter
+
+`HolidayFilter`:
+
+- Creates a grayscale base.
+- Builds a cool blue version.
+- Builds a warm gold and red version.
+- Blends between the cool and warm versions based on intensity.
+
+### PartyFilter
+
+`PartyFilter`:
+
+- Increases contrast and brightness.
+- Applies blue and magenta split-toning.
+- Strengthens the blue and red channels.
+- Adds highlighted edges for a neon-style effect.
+
+### ManualFilter
+
+`ManualFilter` provides user-controlled adjustments for:
+
+- Brightness
+- Contrast
+- Sharpness
+- Color inversion
+
+The filters use OpenCV operations including `cvtColor`, channel splitting and merging, weighted blending, `filter2D`, thresholding, edge detection, and color inversion.
+
+## Views and Interaction
+
+- **HomeView** draws the camera-style dashboard, live preview, navigation cards, and blinking recording indicator. It converts mouse clicks into `HomeAction` values.
+- **QuadView** draws the four-way comparison view and routes quadrant clicks to the selected preset mode.
+- **ModeView** displays one selected preset filter with its name, intensity control, and 35mm-style rectangular frame.
+- **FilterStudioView** displays the manual filter workspace.
+- **CameraChrome** contains shared camera-style visual elements used by multiple views.
+
+### Keyboard Controls
+
+- Press **Esc** to return to the Home screen.
+- Press **+** or **-** in Mode View to change filter intensity.
+- Press **]** to rotate the current media frame.
+- The on-screen rotation control also rotates the current media frame.
+
+## Repository Structure
+
+```text
+src/
+  ofApp.*                   Application lifecycle and screen routing
+  MediaSourceManager.*      Image, video, webcam, and frame management
+  views/                    Home, quad, preset, and manual studio views
+  filters/                  Base and concrete image filters
+
+bin/data/                   Runtime assets, including the placeholder image
+
+config.make                 openFrameworks project configuration
+addons.make                 Required openFrameworks addons
+```
+
+## Building
+
+This project uses openFrameworks and the `ofxOpenCv` addon.
+
+The exact build command depends on the openFrameworks installation and operating system. The project configuration is defined in `config.make`, and the required addons are listed in `addons.make`.
+
+## Collaboration Notes
+
+Keep changes focused by area:
+
+- Media input and frame management
+- Image filters
+- User interface views
+- Application routing
+
+Use feature branches and pull requests so both contributors can review changes before they are merged into `main`.
+
+When documenting ownership, performance results, or testing, include only work and measurements confirmed by the team.
