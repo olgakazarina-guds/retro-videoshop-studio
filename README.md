@@ -2,6 +2,9 @@
 
 An interactive C++ and OpenCV-powered creative studio application designed to function as a digital time machine. The software transforms ordinary video clips, photos, and live camera streams into emotionally loaded memories through the lens of a classic, retro-styled studio interface.
 
+Memory/leak profiling results and the repeatable Instruments test procedure are
+documented in [LEAKS_REPORT.md](LEAKS_REPORT.md).
+
 ## High-Level Project Goals & Expected Behaviour
 * The application features an intuitive Home Screen Dashboard modeled after a vintage camera aesthetic, providing four primary interactive choices:
 * **Play View:** Opens the signature 2x2 Quad-View matrix displaying the active media feed across four distinct cinematic styles simultaneously (Original, 1950s Retro, Holiday Warmth, and Party Neon). Clicking any quadrant instantly routes the user to that mode's dedicated fine-tuning view.
