@@ -114,7 +114,7 @@ log.
 ## Conclusion
 
 For the supplied `Leaks.trace`, **no project-owned memory leak was found and no
-source-code fix is warranted**. The result should be presented as:
+source-code fix is warranted**. The result is the following:
 
 > Instruments reported 20,256 bytes in 327 leak records, all originating in
 > macOS Foundation, LinkServices, and AppIntents runtime code. No leak was
