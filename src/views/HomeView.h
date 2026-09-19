@@ -8,9 +8,9 @@
 enum class HomeAction {
     NONE = 0,
     PLAY_VIEW,       // Card 1: 2x2 Quad Matrix
-    RETRO_MODE,      // Select Mode dropdown: Retro preset
-    HOLIDAY_MODE,    // Select Mode dropdown: Holiday preset
-    PARTY_MODE,      // Select Mode dropdown: Party preset
+    RETRO_MODE,      // Select Mode option: Retro preset
+    HOLIDAY_MODE,    // Select Mode option: Holiday preset
+    PARTY_MODE,      // Select Mode option: Party preset
     UPLOAD_FILE,	 // Card 3 option 1: Load Image or Video file
 	WEBCAM_STREAM,   // Card 3 option 2: Open Webcam
     MANUAL_FILTER    // Card 4: Filter-All manual sandbox
