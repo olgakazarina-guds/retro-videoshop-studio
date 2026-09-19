@@ -17,7 +17,7 @@
 enum class AppState {
     HOME,          // Main camera chassis & dashboard
     QUAD_VIEW,     // 2x2 split comparison screen
-    MODE_VIEW,     // Single filter focus view with intensity slider
+    MODE_VIEW,     // Single filter focus view with keyboard-controlled intensity
     FILTER_STUDIO  // Manual DSP sandbox with keyboard controls
 };
 
