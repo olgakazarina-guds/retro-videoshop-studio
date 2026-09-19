@@ -3,7 +3,7 @@
 #include <opencv2/opencv.hpp>
 #include "../filters/ManualFilter.h"
 
-// FilterStudioView renders the manual slider sandbox (Filter-All Studio)
+// FilterStudioView renders the manual keyboard-controlled filter workspace.
 class FilterStudioView {
 private:
     ManualFilter manualFilter; // Owns the ManualFilter instance
