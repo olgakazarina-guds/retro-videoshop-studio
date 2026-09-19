@@ -4,7 +4,7 @@
 #include <opencv2/opencv.hpp>
 
 // ManualFilter inherits from BaseFilter ("Is-A" Polymorphic relationship).
-// It acts as a manual sandbox, allowing raw slider tweaking of brightness, contrast, sharpness, and color inversion.
+// It acts as a manual sandbox controlled by keyboard adjustments for brightness, contrast, sharpness, and color inversion.
 class ManualFilter : public BaseFilter
 {
 private:
@@ -21,7 +21,7 @@ public:
     // BaseFilter interface implementation
     cv::Mat process(const cv::Mat& input, float intensity = 1.0f) override;
 
-    // Setter methods for UI sliders and interactive key controls
+ // Setter methods used by the interactive keyboard controls
     void setBrightness(float val);
     void setContrast(float val);
     void setSharpness(float val);
