@@ -133,7 +133,7 @@ void HomeView::draw(cv::Mat& canvas, const cv::Mat& previewFrame) {
     // Draw the unchanged dashboard cards with clean line breaks.
     drawCard(btnPlayView,     "1. Play View",     "2x2 Quad Matrix",          "Live 4-way stream",      cv::Scalar(0, 200, 255));
     drawCard(btnUploadStream, "3. Upload/Stream", "Load Image or Video",      "Webcam Configuration",   cv::Scalar(240, 200, 0));
-    drawCard(btnManualFilter, "4. Manual Filter", "Filter-All Sandbox",       "Raw DSP Sliders",        cv::Scalar(100, 220, 100));
+    drawCard(btnManualFilter, "4. Manual Filter", "Filter-All Sandbox",       "Keyboard DSP Controls",        cv::Scalar(100, 220, 100));
 
     // Card 2 keeps the same title and card styling as the other cards.
     const cv::Scalar selectAccent(60, 60, 240);
