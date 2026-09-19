@@ -4,7 +4,7 @@
 //========================================================================
 int main( ){
 
-	//Use ofGLFWWindowSettings for more options like multi-monitor fullscreen
+	//Use ofGLFWWindowSettings to configure the openFrameworks window size and display mode.
 	ofGLWindowSettings settings;
 	settings.setSize(1280, 720);
 	settings.windowMode = OF_WINDOW; //can also be OF_FULLSCREEN
