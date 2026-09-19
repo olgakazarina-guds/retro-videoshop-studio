@@ -104,7 +104,7 @@ void HomeView::draw(cv::Mat& canvas, const cv::Mat& previewFrame) {
 
     // -------------------------------------------------------------------------
     // 8. Lambda Function to Draw Dashboard Cards
-    // (Notice sub1 and sub2 are drawn on separate lines to prevent '?' bugs!)
+    // Draw each subtitle as a separate text call because cv::putText does not support newline characters.
     // -------------------------------------------------------------------------
     auto drawCard = [&](const cv::Rect& r, const std::string& title, 
                         const std::string& sub1, const std::string& sub2, 
