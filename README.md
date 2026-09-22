@@ -4,6 +4,16 @@ Retro Videoshop Studio is a C++ and openFrameworks application that uses OpenCV 
 
 Memory and leak profiling notes are available in [LEAKS_REPORT.md](LEAKS_REPORT.md).
 
+## How to Run
+* **Launch Application:** open the program to reveal the retro camera-styled Home Screen dashboard.
+* **Make a Selection:** click directly on one of the four main interactive choices:
+* **Upload/Stream:** configure and load your image file, video clip, or live webcam feed.
+* **Play View:** jump straight into the 2x2 live matrix to see all four aesthetic styles side-by-side (and click any window to inspect it further).
+* **Select Mode:** directly open a specific aesthetic mode view framed in film strip borders.
+* **Manual Filter:** open the Filter-All Studio sandbox to tweak parameters freely.
+* **Fine-Tune & Enjoy:** adjust sliders or keyboard parameters in real time to craft your emotionally loaded memories.
+* Return to Home Screen via esc.
+
 ## How the Application Is Organized
 
 `ofApp` is the main application coordinator. It owns the media manager, view objects, filter objects, and current screen state.
