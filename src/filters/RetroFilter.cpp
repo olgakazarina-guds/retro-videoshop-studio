@@ -9,6 +9,9 @@ cv::Mat RetroFilter::process(const cv::Mat& input, float intensity) {
     cv::cvtColor(input, gray, cv::COLOR_BGR2GRAY);
     cv::cvtColor(gray, gray3c, cv::COLOR_GRAY2BGR);
 
+	// Safely blend 70% grayscale with 30% original input to keep color data alive
+    cv::addWeighted(gray3c, 0.7f, input, 0.3f, 0.0, gray3c);
+
     // 2. Apply Denim/Indigo Vintage Tint (Boost Blue, slightly reduce Red/Green)
     cv::Mat denimMat;
     gray3c.convertTo(denimMat, CV_32F);
@@ -16,9 +19,9 @@ cv::Mat RetroFilter::process(const cv::Mat& input, float intensity) {
     std::vector<cv::Mat> channels;
     cv::split(denimMat, channels);
     
-	channels[0] *= 1.05f; // Blue channel boosted for denim effect
-    channels[1] *= 0.98f; // Green channel nearly neutral
-    channels[2] *= 0.90f; // Red channel softened slightly
+	channels[0] *= 1.25f; // Blue channel boosted for denim effect
+    channels[1] *= 0.95f; // Green channel nearly neutral
+    channels[2] *= 0.75f; // Red channel softened slightly
     
     cv::merge(channels, denimMat);
     denimMat.convertTo(denimMat, input.type());
